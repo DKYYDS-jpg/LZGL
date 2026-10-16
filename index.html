@@ -317,56 +317,106 @@
       </div>
     </div>
 
-    <!-- 时间线 -->
-    <h3 class="subsection-title reveal">🕰️ 四渡赤水 · 时间线</h3>
-    <div class="timeline">
-      <div class="timeline-item reveal">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">1935年1月 · 入川</div>
-          <div class="timeline-title">中央红军长征入川第一桥</div>
-          <div class="timeline-text">
-            红军从贵州土城出发，经岩桑沟兴桥进入四川古蔺境内，打响了入川第一枪。
-            这座桥因此被称为“中央红军长征入川第一桥”。
-          </div>
-        </div>
-      </div>
-
-      <div class="timeline-item reveal">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">1935年2月 · 二渡</div>
-          <div class="timeline-title">太平渡渡口 · 二渡赤水</div>
-          <div class="timeline-text">
-            红军在太平渡、二郎滩架设浮桥，挥师东进，重入贵州，
-            取得了长征以来最大的一次胜利——娄山关大捷。
-          </div>
-        </div>
-      </div>
-
-      <div class="timeline-item reveal">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">1935年3月 · 三渡</div>
-          <div class="timeline-title">二郎滩背水战 · 开仓分盐</div>
-          <div class="timeline-text">
-            红军与敌军激战，以少胜多。随后打开盐仓，将食盐分给穷苦百姓，
-            赢得了群众的衷心拥护。当地至今流传着“红军盐”的佳话。
-          </div>
-        </div>
-      </div>
-
-      <div class="timeline-item reveal">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">1935年3月 · 四渡</div>
-          <div class="timeline-title">四渡赤水 · 太平渡再渡</div>
-          <div class="timeline-text">
-            红军从太平渡、二郎滩第四次渡过赤水河，南渡乌江，
-            彻底摆脱了数十万敌军的围追堵截，写下了军事史上的传奇。
-          </div>
-        </div>
-      </div>
+    <!-- 长征时间线（交互式：拖动浏览 · 点击查看详情） -->
+    <h3 class="subsection-title reveal">🕰️ 转战古蔺 54 天 · 长征时间线</h3>
+    <p class="cm-hint reveal">⟵ 拖动时间轴 · 点击节点查看详情 ⟶</p>
+    <div class="cm-timeline reveal" id="cmTimeline">
+      <div class="cm-river"></div>
+      <div class="cm-progress" id="cmProgress"></div>
+      <div class="cm-track">
+
+        <div class="cm-node" data-full="遵义会议后，中央红军定下北渡长江、与红四方面军会合的计划。1935年1月19日，红军兵分三路从遵义、桐梓、松坎地区出发，向土城、赤水方向挺进。当时谁也没有想到，接下来的两个多月里，赤水河将被四次横渡，写就中国革命战争史上的传奇。">
+          <div class="cm-node-dot"></div>
+          <div class="cm-node-date">1935.01.19</div>
+          <div class="cm-node-card">
+            <div class="cm-node-title">挥师北进</div>
+            <div class="cm-node-teaser">红军撤离遵义，兵分三路向土城、赤水方向挺进</div>
+          </div>
+        </div>
+
+        <div class="cm-node" data-full="1月28日土城战斗打响，因敌情变化，红军果断撤出战斗。1月29日凌晨，从土城、元厚场等渡口西渡赤水河，进入川南古蔺、叙永地区。这是一渡赤水——红军第一次踏上古蔺的土地，从此与这片红色热土结下不解之缘。">
+          <div class="cm-node-dot"></div>
+          <div class="cm-node-date">1935.01.29</div>
+          <div class="cm-node-card">
+            <div class="cm-node-title">一渡赤水 · 西进川南</div>
+            <div class="cm-node-teaser">从土城、元厚场西渡赤水河，进入古蔺、叙永地区</div>
+          </div>
+        </div>
+
+        <div class="cm-node" data-full="红军渡过赤水河后，经岩桑沟兴桥进入四川古蔺境内，打响了入川第一枪。这座不起眼的小桥，因此被称为「中央红军长征入川第一桥」。今天它仍静卧在古蔺的山水间，成为红色研学路上的重要一站。">
+          <div class="cm-node-dot"></div>
+          <div class="cm-node-date">1935.01 末</div>
+          <div class="cm-node-card">
+            <div class="cm-node-title">入川第一桥</div>
+            <div class="cm-node-teaser">经岩桑沟兴桥进入古蔺，打响入川第一枪</div>
+          </div>
+        </div>
+
+        <div class="cm-node" data-full="扎西会议后，红军突然回师东进。2月18日至21日，从古蔺的太平渡、九溪口、二郎滩等渡口架设浮桥，第二次渡过赤水河，重入贵州。太平渡的乡亲们拆下自家门板、献出船只帮助红军架桥——「门板浮桥」的故事就发生在这里。">
+          <div class="cm-node-dot"></div>
+          <div class="cm-node-date">1935.02.18</div>
+          <div class="cm-node-card">
+            <div class="cm-node-title">二渡赤水 · 门板浮桥</div>
+            <div class="cm-node-teaser">太平渡、二郎滩架设浮桥，挥师东渡重入贵州</div>
+          </div>
+        </div>
+
+        <div class="cm-node" data-full="二渡赤水的先头战斗中，红军以不足一个团的兵力在二郎滩背水一战，击溃敌军两个团，创造了长征以来以少胜多的经典战例。随后红军打开盐仓，把食盐分给穷苦百姓，赢得了群众的衷心拥护。当地至今流传着「红军盐」的佳话。">
+          <div class="cm-node-dot"></div>
+          <div class="cm-node-date">1935.02</div>
+          <div class="cm-node-card">
+            <div class="cm-node-title">二郎滩背水战 · 开仓分盐</div>
+            <div class="cm-node-teaser">背水一战以少胜多，盐分百姓「红军盐」传佳话</div>
+          </div>
+        </div>
+
+        <div class="cm-node" data-full="回师途中，红军总司令部在古蔺双沙镇驻扎7天，指挥部署回师黔北的作战行动，留下大量标语和文献。今天双沙镇仍保存着总司令部旧址，墙头的红军标语历经风雨，字迹依稀可辨。">
+          <div class="cm-node-dot"></div>
+          <div class="cm-node-date">1935.02</div>
+          <div class="cm-node-card">
+            <div class="cm-node-title">双沙总司令部</div>
+            <div class="cm-node-teaser">总司令部驻扎双沙镇7天，留下大量标语文献</div>
+          </div>
+        </div>
+
+        <div class="cm-node" data-full="二渡赤水后，红军连克桐梓、娄山关，于2月28日再次攻占遵义城，取得长征以来最大的一次胜利。娄山关上，毛泽东写下「雄关漫道真如铁，而今迈步从头越」的千古名句。">
+          <div class="cm-node-dot"></div>
+          <div class="cm-node-date">1935.02.28</div>
+          <div class="cm-node-card">
+            <div class="cm-node-title">娄山关大捷 · 重占遵义</div>
+            <div class="cm-node-teaser">长征以来最大胜利，「而今迈步从头越」</div>
+          </div>
+        </div>
+
+        <div class="cm-node" data-full="为调动敌军，红军于3月16日至17日从茅台镇第三次渡过赤水河，再次进入古蔺境内，佯装北渡长江。敌军主力被纷纷调往川南，包围圈越收越紧——却不知这正是调虎离山之计。">
+          <div class="cm-node-dot"></div>
+          <div class="cm-node-date">1935.03.16</div>
+          <div class="cm-node-card">
+            <div class="cm-node-title">三渡赤水 · 佯动诱敌</div>
+            <div class="cm-node-teaser">从茅台镇再次西渡，三进古蔺，佯装北渡长江</div>
+          </div>
+        </div>
+
+        <div class="cm-node" data-full="3月21日至22日，红军从太平渡、九溪口、二郎滩第四次渡过赤水河，随后南渡乌江、威逼贵阳，彻底跳出了数十万敌军的围追堵截。四渡赤水被誉为毛泽东军事指挥艺术的「得意之笔」，古蔺的山水见证了这一传奇。转战54天，红色基因从此深植这片土地。">
+          <div class="cm-node-dot"></div>
+          <div class="cm-node-date">1935.03.21</div>
+          <div class="cm-node-card">
+            <div class="cm-node-title">四渡赤水 · 跳出重围</div>
+            <div class="cm-node-teaser">太平渡再渡，南渡乌江，军事史上的传奇</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 时间线节点详情弹窗 -->
+    <div class="cm-modal" id="cmModal" role="dialog" aria-modal="true">
+      <div class="cm-modal-box">
+        <button class="cm-modal-close" id="cmModalClose" aria-label="关闭">×</button>
+        <div class="cm-modal-date" id="cmModalDate"></div>
+        <div class="cm-modal-title" id="cmModalTitle"></div>
+        <div class="cm-modal-text" id="cmModalText"></div>
+      </div>
     </div>
 
     <!-- 船工故事 -->
@@ -1370,7 +1420,8 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="./js/script.js"></script>
+  <script src="./js/local-links.js"></script>
+  <script src="./js/script.js?v=3"></script>
   <!-- 访问统计（51LA，ID 在 analytics.js 中配置）+ PWA 离线缓存 -->
   <script src="./js/analytics.js"></script>
   <script>

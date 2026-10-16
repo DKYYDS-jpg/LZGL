@@ -317,7 +317,7 @@ document.querySelectorAll('.modern-card[data-id], .food-card[data-id]').forEach(
         sessionStorage.setItem('music_time', bgMusic.currentTime);
         sessionStorage.setItem('music_playing', !bgMusic.paused);
       }
-      window.location.href = '/detail?id=' + encodeURIComponent(id);
+      window.location.href = __localLink('/detail?id=' + encodeURIComponent(id));
     }
   });
 });
@@ -879,7 +879,7 @@ document.querySelectorAll('.cloud-tag[data-id]').forEach(tag => {
         sessionStorage.setItem('music_time', bgMusic.currentTime);
         sessionStorage.setItem('music_playing', !bgMusic.paused);
       }
-      window.location.href = '/detail?id=' + encodeURIComponent(id);
+      window.location.href = __localLink('/detail?id=' + encodeURIComponent(id));
     }
   });
 });
@@ -902,4 +902,56 @@ document.querySelectorAll('.cloud-tag[data-id]').forEach(tag => {
     }
     // 不阻止默认跳转，继续走 href
   });
+})();
+
+/* ==================== 17. 长征时间线（拖动浏览 + 节点详情弹窗） ==================== */
+(function initCMTimeline() {
+  const box = document.getElementById('cmTimeline');
+  if (!box) return;
+  const progress = document.getElementById('cmProgress');
+  const modal = document.getElementById('cmModal');
+
+  /* 滚动进度线（红星随进度前进） */
+  function updateProgress() {
+    const max = box.scrollWidth - box.clientWidth;
+    progress.style.width = (max > 0 ? (box.scrollLeft / max) * 100 : 100) + '%';
+  }
+  box.addEventListener('scroll', updateProgress);
+  window.addEventListener('resize', updateProgress);
+  updateProgress();
+
+  /* 鼠标拖拽滚动（触屏走原生滑动） */
+  let down = false, startX = 0, startLeft = 0, moved = false;
+  box.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    down = true; moved = false;
+    startX = e.clientX; startLeft = box.scrollLeft;
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!down) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 6) moved = true;
+    box.scrollLeft = startLeft - dx;
+  });
+  window.addEventListener('pointerup', () => { down = false; });
+
+  /* 节点点击 → 详情弹窗（拖拽后不触发） */
+  const mDate = document.getElementById('cmModalDate');
+  const mTitle = document.getElementById('cmModalTitle');
+  const mText = document.getElementById('cmModalText');
+  box.querySelectorAll('.cm-node').forEach((node) => {
+    node.addEventListener('click', () => {
+      if (moved) return;
+      mDate.textContent = node.querySelector('.cm-node-date').textContent;
+      mTitle.textContent = node.querySelector('.cm-node-title').textContent;
+      mText.textContent = node.dataset.full || '';
+      modal.classList.add('show');
+    });
+  });
+
+  /* 关闭弹窗：× 按钮 / 点背景 / ESC */
+  function closeModal() { modal.classList.remove('show'); }
+  document.getElementById('cmModalClose').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 })();

@@ -564,7 +564,7 @@ const DETAIL_MODEL_MAP = {
   const wrap = document.getElementById('detailWrap');
 
   if (!data) {
-    loading.innerHTML = '<div style="text-align:center;color:#d4a843;font-size:1rem;">未找到该内容<br><br><a href="/" style="color:#f5d78e;">← 返回主页</a></div>';
+    loading.innerHTML = '<div style="text-align:center;color:#d4a843;font-size:1rem;">未找到该内容<br><br><a href="' + __localLink('/') + '" style="color:#f5d78e;">← 返回主页</a></div>';
     return;
   }
 
