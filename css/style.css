@@ -3991,3 +3991,69 @@ img {
   .cm-modal-title { font-size: 1.2rem; }
   .cm-modal-text { font-size: .9rem; }
 }
+
+/* ==================== 长征知识闯关（答题） ==================== */
+/* 入口卡片 */
+.quiz-entry { position: relative; margin: 56px auto 0; max-width: 560px; text-align: center; background: linear-gradient(160deg, rgba(58,18,12,.92), rgba(26,8,6,.92)); border: 1px solid rgba(212,168,67,.5); border-radius: 18px; padding: 34px 26px 30px; box-shadow: 0 14px 40px rgba(0,0,0,.4); overflow: hidden; }
+.quiz-entry::before { content: ""; position: absolute; inset: 6px; border: 1px dashed rgba(212,168,67,.28); border-radius: 13px; pointer-events: none; }
+.quiz-entry-deco { font-size: 1.6rem; color: #d4a843; text-shadow: 0 0 14px rgba(212,168,67,.7); }
+.quiz-entry-title { margin-top: 8px; font-family: 'STKaiti','KaiTi',serif; font-size: 1.6rem; font-weight: 700; color: #f5d78e; letter-spacing: 4px; }
+.quiz-entry-sub { margin-top: 10px; font-size: .88rem; color: rgba(240,226,200,.78); letter-spacing: 1px; }
+.quiz-entry-best { margin-top: 10px; font-size: .8rem; color: rgba(212,168,67,.9); }
+.quiz-entry-btn { margin-top: 18px; display: inline-block; border: 1px solid rgba(245,215,142,.75); border-radius: 30px; background: linear-gradient(135deg, #a01818, #6e0f0f); color: #f5d78e; font-size: 1rem; font-weight: 700; letter-spacing: 3px; padding: 12px 42px; cursor: pointer; transition: all .25s; box-shadow: 0 6px 18px rgba(160,24,24,.45); font-family: inherit; }
+.quiz-entry-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(160,24,24,.6); background: linear-gradient(135deg, #bc1f1f, #7d1212); }
+.quiz-entry-btn:active { transform: translateY(0); }
+
+/* 答题弹窗主体 */
+.quiz-box { max-width: 600px; }
+.quiz-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.quiz-progress { font-size: .82rem; color: #f5d78e; background: rgba(138,26,26,.55); border: 1px solid rgba(212,168,67,.4); padding: 3px 12px; border-radius: 20px; letter-spacing: 1px; }
+.quiz-score-live { font-size: .8rem; color: rgba(212,168,67,.9); letter-spacing: 1px; }
+.quiz-question { margin-top: 18px; font-size: 1.08rem; font-weight: 700; color: #f5e9d0; line-height: 1.8; }
+.quiz-options { margin-top: 16px; display: grid; gap: 10px; }
+.quiz-opt { position: relative; text-align: left; background: rgba(30,12,10,.78); border: 1px solid rgba(212,168,67,.3); border-radius: 12px; color: rgba(240,226,200,.92); font-size: .92rem; line-height: 1.6; padding: 12px 14px 12px 44px; cursor: pointer; transition: all .2s; font-family: inherit; }
+.quiz-opt::before { content: attr(data-tag); position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border: 1px solid rgba(212,168,67,.55); border-radius: 50%; color: #f5d78e; font-size: .75rem; line-height: 20px; text-align: center; }
+.quiz-opt:hover:not(:disabled) { border-color: rgba(245,215,142,.7); background: rgba(46,18,14,.85); transform: translateX(3px); }
+.quiz-opt:disabled { cursor: default; opacity: .85; }
+.quiz-opt.correct { border-color: #4caf7d; background: rgba(36,80,52,.55); color: #d8f3e3; }
+.quiz-opt.correct::before { content: "\2713"; border-color: #4caf7d; color: #8fe0b5; }
+.quiz-opt.wrong { border-color: #d64545; background: rgba(112,24,24,.55); color: #f6d2d2; }
+.quiz-opt.wrong::before { content: "\2717"; border-color: #d64545; color: #f09292; }
+.quiz-feedback { min-height: 26px; margin-top: 14px; font-size: .88rem; line-height: 1.7; color: rgba(240,226,200,.85); }
+.quiz-feedback.good { color: #8fe0b5; }
+.quiz-feedback.bad { color: #f0a8a8; }
+
+/* 结果视图 */
+#quizResult { text-align: center; padding: 8px 0 4px; }
+.quiz-result-star { font-size: 2.6rem; color: #d4a843; text-shadow: 0 0 18px rgba(212,168,67,.8); animation: quizStar .8s ease; }
+@keyframes quizStar { from { transform: scale(.3) rotate(-40deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+.quiz-result-score { margin-top: 10px; font-family: 'STKaiti','KaiTi',serif; font-size: 2rem; font-weight: 700; color: #f5d78e; }
+.quiz-result-title { margin-top: 8px; display: inline-block; font-size: .9rem; letter-spacing: 2px; color: #2a0f0b; background: linear-gradient(135deg, #f5d78e, #d4a843); border-radius: 20px; padding: 5px 18px; font-weight: 700; }
+.quiz-result-text { margin-top: 14px; font-size: .9rem; color: rgba(240,226,200,.85); line-height: 1.9; }
+.quiz-result-actions { margin-top: 20px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.quiz-result-actions .quiz-entry-btn { margin-top: 0; padding: 10px 30px; font-size: .92rem; }
+.quiz-done-btn { border: 1px solid rgba(212,168,67,.5); border-radius: 30px; background: transparent; color: #f5d78e; font-size: .92rem; letter-spacing: 2px; padding: 10px 30px; cursor: pointer; transition: all .25s; font-family: inherit; }
+.quiz-done-btn:hover { background: rgba(212,168,67,.15); }
+
+@media (max-width: 640px) {
+  .quiz-entry { margin: 40px auto 0; padding: 28px 18px 24px; }
+  .quiz-entry-title { font-size: 1.35rem; }
+  .quiz-question { font-size: 1rem; }
+  .quiz-result-score { font-size: 1.6rem; }
+}
+
+/* ==================== 每日长征语录 / 历史上的今天 ==================== */
+.daily-quote { position: relative; max-width: 720px; margin: 0 auto; padding: 26px 30px 20px; text-align: center; background: linear-gradient(160deg, rgba(42,15,11,.9), rgba(22,6,5,.9)); border-top: 1px solid rgba(212,168,67,.4); border-bottom: 1px solid rgba(212,168,67,.4); }
+.dq-badge { display: inline-block; font-size: .75rem; letter-spacing: 3px; color: #2a0f0b; background: linear-gradient(135deg, #f5d78e, #d4a843); border-radius: 20px; padding: 4px 16px; font-weight: 700; }
+.dq-badge.history { background: linear-gradient(135deg, #d4352a, #a01818); color: #f5d78e; border: 1px solid rgba(245,215,142,.6); }
+.dq-text { margin-top: 16px; font-family: 'STKaiti','KaiTi',serif; font-size: 1.35rem; line-height: 1.9; color: #f5e9d0; letter-spacing: 2px; }
+.dq-foot { margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.dq-source { font-size: .82rem; color: rgba(212,168,67,.85); letter-spacing: 1px; }
+.dq-refresh { border: 1px solid rgba(212,168,67,.45); border-radius: 20px; background: rgba(138,26,26,.35); color: #f5d78e; font-size: .75rem; letter-spacing: 2px; padding: 4px 14px; cursor: pointer; transition: all .25s; font-family: inherit; }
+.dq-refresh:hover { background: rgba(212,168,67,.2); transform: rotate(-3deg); }
+.daily-quote.dq-swap .dq-text, .daily-quote.dq-swap .dq-source { animation: dqFade .45s ease; }
+@keyframes dqFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (max-width: 640px) {
+  .daily-quote { padding: 20px 18px 16px; }
+  .dq-text { font-size: 1.1rem; letter-spacing: 1px; }
+}

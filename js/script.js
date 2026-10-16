@@ -955,3 +955,271 @@ document.querySelectorAll('.cloud-tag[data-id]').forEach(tag => {
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 })();
+
+/* ==================== 18. 长征知识闯关（答题赢积分） ==================== */
+(function initQuiz() {
+  const entry = document.querySelector('.quiz-entry');
+  const modal = document.getElementById('quizModal');
+  if (!entry || !modal) return;
+
+  const STORAGE_KEY_BEST = 'gulin_quiz_best';
+  const OPTION_TAGS = ['A', 'B', 'C', 'D'];
+
+  const QUESTIONS = [
+    {
+      q: '1935年1月，红军一渡赤水后，进入了哪个地区？',
+      options: ['川南古蔺、叙永地区', '黔北遵义地区', '云南扎西地区', '川西懋功地区'],
+      answer: 0,
+      explain: '1月29日，红军从土城、元厚场西渡赤水河，进入川南古蔺、叙永地区。'
+    },
+    {
+      q: '「门板浮桥」的佳话发生在哪个渡口？',
+      options: ['土城渡口', '太平渡', '茅台渡口', '九溪口'],
+      answer: 1,
+      explain: '二渡赤水时，太平渡乡亲拆下自家门板、献出木船，帮红军架起浮桥。'
+    },
+    {
+      q: '二郎滩背水一战，红军以不足一个团的兵力击溃了敌军几个团？',
+      options: ['一个团', '三个团', '两个团', '五个团'],
+      answer: 2,
+      explain: '二郎滩背水战以少胜多，击溃敌军两个团，随后开仓分盐，留下「红军盐」的美谈。'
+    },
+    {
+      q: '红军总司令部在古蔺哪个镇驻扎了7天？',
+      options: ['太平镇', '二郎镇', '茅溪镇', '双沙镇'],
+      answer: 3,
+      explain: '总司令部驻扎双沙镇7天，留下大量标语与文献。'
+    },
+    {
+      q: '红军三渡赤水的渡口是哪里？',
+      options: ['太平渡', '茅台镇', '二郎滩', '土城'],
+      answer: 1,
+      explain: '3月16日，红军从茅台镇三渡赤水，三进古蔺，佯装北渡长江诱敌。'
+    },
+    {
+      q: '四渡赤水后，红军南渡哪条江、威逼贵阳，跳出了包围圈？',
+      options: ['金沙江', '大渡河', '赤水河', '乌江'],
+      answer: 3,
+      explain: '四渡赤水后红军南渡乌江、威逼贵阳，彻底跳出数十万敌军的围追堵截。'
+    }
+  ];
+
+  const elBest = document.getElementById('quizBest');
+  const elPlay = document.getElementById('quizPlay');
+  const elResult = document.getElementById('quizResult');
+  const elProgress = document.getElementById('quizProgress');
+  const elScoreLive = document.getElementById('quizScoreLive');
+  const elQuestion = document.getElementById('quizQuestion');
+  const elOptions = document.getElementById('quizOptions');
+  const elFeedback = document.getElementById('quizFeedback');
+  const elResultScore = document.getElementById('quizResultScore');
+  const elResultTitle = document.getElementById('quizResultTitle');
+  const elResultText = document.getElementById('quizResultText');
+
+  let current = 0;
+  let correctCount = 0;
+  let answered = false;
+  let advanceTimer = null;
+
+  /* 入口卡片最佳成绩展示 */
+  function renderBest() {
+    const best = localStorage.getItem(STORAGE_KEY_BEST);
+    elBest.textContent = best === null
+      ? '最佳成绩：尚未挑战'
+      : `最佳成绩：答对 ${best} / ${QUESTIONS.length} 题`;
+  }
+  renderBest();
+
+  function openQuiz() {
+    playSound('popup');
+    current = 0;
+    correctCount = 0;
+    elResult.style.display = 'none';
+    elPlay.style.display = '';
+    renderQuestion();
+    modal.classList.add('show');
+  }
+
+  function closeQuiz() {
+    modal.classList.remove('show');
+    if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+    renderBest();
+  }
+
+  function renderQuestion() {
+    answered = false;
+    const item = QUESTIONS[current];
+    elProgress.textContent = `第 ${current + 1} / ${QUESTIONS.length} 题`;
+    elScoreLive.textContent = `本轮答对 ${correctCount} 题`;
+    elQuestion.textContent = item.q;
+    elFeedback.textContent = '';
+    elFeedback.className = 'quiz-feedback';
+    elOptions.innerHTML = '';
+
+    item.options.forEach((text, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.dataset.tag = OPTION_TAGS[idx];
+      btn.textContent = text;
+      btn.addEventListener('click', () => answer(idx, btn));
+      elOptions.appendChild(btn);
+    });
+  }
+
+  function answer(idx, btn) {
+    if (answered) return;
+    answered = true;
+
+    const item = QUESTIONS[current];
+    const optionBtns = elOptions.querySelectorAll('.quiz-opt');
+    optionBtns.forEach(b => { b.disabled = true; });
+
+    if (idx === item.answer) {
+      btn.classList.add('correct');
+      correctCount++;
+      elFeedback.textContent = '回答正确！' + item.explain;
+      elFeedback.classList.add('good');
+      /* 接入现有积分系统（上限 SCORE_MAX） */
+      if (score < SCORE_MAX) {
+        score++;
+        localStorage.setItem(STORAGE_KEY_SCORE, String(score));
+        updateScoreDisplay(true);
+      }
+      playSound('score');
+    } else {
+      btn.classList.add('wrong');
+      optionBtns[item.answer].classList.add('correct');
+      elFeedback.textContent = '答错了。' + item.explain;
+      elFeedback.classList.add('bad');
+      playSound('tap');
+    }
+    elScoreLive.textContent = `本轮答对 ${correctCount} 题`;
+
+    advanceTimer = setTimeout(() => {
+      advanceTimer = null;
+      current++;
+      if (current < QUESTIONS.length) {
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    }, 2200);
+  }
+
+  function showResult() {
+    elPlay.style.display = 'none';
+    elResult.style.display = '';
+
+    /* 保存最佳成绩 */
+    const prevBest = parseInt(localStorage.getItem(STORAGE_KEY_BEST) || '-1', 10);
+    if (correctCount > prevBest) {
+      localStorage.setItem(STORAGE_KEY_BEST, String(correctCount));
+    }
+
+    elResultScore.textContent = `答对 ${correctCount} / ${QUESTIONS.length} 题`;
+
+    let title, text;
+    if (correctCount === QUESTIONS.length) {
+      title = '长征知识达人';
+      text = '满分通关！四渡赤水的每一段史实你都了然于胸，红色基因已深植心中。';
+      playSound('adopt');
+    } else if (correctCount >= 4) {
+      title = '红色传人';
+      text = '很棒！大部分史实都已掌握，再回看一遍时间线，满分就在眼前。';
+      playSound('score');
+    } else {
+      title = '继续加油';
+      text = '别灰心，回到上方的时间线再走一遍长征路，答案都藏在史实节点里。';
+      playSound('popup');
+    }
+    elResultTitle.textContent = title;
+    elResultText.textContent = text;
+  }
+
+  /* 事件绑定 */
+  document.getElementById('quizStart').addEventListener('click', openQuiz);
+  document.getElementById('quizRetry').addEventListener('click', openQuiz);
+  document.getElementById('quizDone').addEventListener('click', closeQuiz);
+  document.getElementById('quizClose').addEventListener('click', closeQuiz);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeQuiz(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeQuiz(); });
+})();
+
+/* ==================== 19. 每日长征语录 / 历史上的今天 ==================== */
+(function initDailyQuote() {
+  const box = document.getElementById('dailyQuote');
+  if (!box) return;
+  const elBadge = document.getElementById('dqBadge');
+  const elText = document.getElementById('dqText');
+  const elSource = document.getElementById('dqSource');
+  const elRefresh = document.getElementById('dqRefresh');
+
+  const QUOTES = [
+    { text: '红军不怕远征难，万水千山只等闲。', source: '毛泽东《七律 · 长征》' },
+    { text: '雄关漫道真如铁，而今迈步从头越。', source: '毛泽东《忆秦娥 · 娄山关》' },
+    { text: '从头越，苍山如海，残阳如血。', source: '毛泽东《忆秦娥 · 娄山关》' },
+    { text: '金沙水拍云崖暖，大渡桥横铁索寒。', source: '毛泽东《七律 · 长征》' },
+    { text: '更喜岷山千里雪，三军过后尽开颜。', source: '毛泽东《七律 · 长征》' },
+    { text: '长征是宣言书，长征是宣传队，长征是播种机。', source: '毛泽东' },
+    { text: '四渡赤水出奇兵，毛主席用兵真如神。', source: '《长征组歌》' },
+    { text: '战士双脚走天下，四渡赤水出奇兵。', source: '《长征组歌》' },
+    { text: '乌江天险重飞渡，兵临贵阳逼昆明。', source: '《长征组歌》' },
+    { text: '横断山，路难行。敌重兵，压黔境。', source: '《长征组歌》' },
+    { text: '敌人弃甲丢烟枪，我军乘胜赶路程。', source: '《长征组歌》' },
+    { text: '调虎离山袭金沙，毛主席用兵真如神。', source: '《长征组歌》' },
+    { text: '长征是以我们胜利、敌人失败的结果而告结束。', source: '毛泽东' },
+    { text: '我们开动了每人的两只脚，长驱二万余里，纵横十一个省。', source: '毛泽东' },
+    { text: '苦不苦，想想长征两万五；累不累，想想革命老前辈。', source: '民间谚语' }
+  ];
+
+  /* 历史上的今天（键：月-日） */
+  const EVENTS = {
+    '1-15': { text: '1935年1月15日至17日，遵义会议召开，在危急关头挽救了党、挽救了红军、挽救了中国革命。', source: '长征史实 · 遵义会议' },
+    '1-19': { text: '1935年1月19日，遵义会议后，红军兵分三路挥师北进，向土城、赤水方向挺进。', source: '长征史实 · 四渡赤水' },
+    '1-29': { text: '1935年1月29日，红军从土城、元厚场一渡赤水河，进入川南古蔺、叙永地区。', source: '长征史实 · 一渡赤水' },
+    '2-18': { text: '1935年2月18日起，红军从太平渡、九溪口、二郎滩二渡赤水，重入贵州。太平渡乡亲拆门板、献木船，帮红军架起浮桥。', source: '长征史实 · 二渡赤水' },
+    '2-28': { text: '1935年2月28日，红军再占遵义，取得长征以来最大胜利。毛泽东写下「雄关漫道真如铁，而今迈步从头越」。', source: '长征史实 · 娄山关大捷' },
+    '3-16': { text: '1935年3月16日至17日，红军从茅台镇三渡赤水，三进古蔺，佯装北渡长江诱敌。', source: '长征史实 · 三渡赤水' },
+    '3-21': { text: '1935年3月21日至22日，红军从太平渡、九溪口、二郎滩四渡赤水，随后南渡乌江、威逼贵阳，跳出数十万敌军的围追堵截。', source: '长征史实 · 四渡赤水' },
+    '10-17': { text: '1934年10月17日，中央红军从江西于都出发，踏上漫漫长征路。', source: '长征史实 · 长征出发' },
+    '10-22': { text: '1936年10月22日，红军三大主力胜利会师，伟大的长征宣告结束。', source: '长征史实 · 胜利会师' }
+  };
+
+  /* 今日语录索引：按一年中的第几天轮换 */
+  const now = new Date();
+  const startOfYear = new Date(now.getFullYear(), 0, 0);
+  const dayOfYear = Math.floor((now - startOfYear) / 86400000);
+  let quoteIndex = dayOfYear % QUOTES.length;
+
+  function renderQuote(animate) {
+    const item = QUOTES[quoteIndex];
+    elBadge.textContent = '每日长征语录';
+    elBadge.classList.remove('history');
+    elText.textContent = '「' + item.text + '」';
+    elSource.textContent = '—— ' + item.source;
+    if (animate) {
+      box.classList.remove('dq-swap');
+      void box.offsetWidth;
+      box.classList.add('dq-swap');
+    }
+  }
+
+  /* 优先展示「历史上的今天」 */
+  const todayKey = (now.getMonth() + 1) + '-' + now.getDate();
+  const todayEvent = EVENTS[todayKey];
+  if (todayEvent) {
+    elBadge.textContent = '历史上的今天';
+    elBadge.classList.add('history');
+    elText.textContent = todayEvent.text;
+    elSource.textContent = '—— ' + todayEvent.source;
+  } else {
+    renderQuote(false);
+  }
+
+  /* 换一句：切换到语录轮换模式 */
+  elRefresh.addEventListener('click', () => {
+    playSound('tap');
+    quoteIndex = (quoteIndex + 1) % QUOTES.length;
+    renderQuote(true);
+  });
+})();

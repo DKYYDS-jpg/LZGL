@@ -1357,6 +1357,7 @@
     });
 
     canvas.addEventListener('pointerup', (e) => {
+      if (guide.active) return;
       const dx = Math.abs(e.clientX - startX);
       const dy = Math.abs(e.clientY - startY);
       const dt = Date.now() - startTime;
@@ -1561,6 +1562,7 @@
 
   function animate() {
     requestAnimationFrame(animate);
+
     const time = performance.now() / 1000;
 
     if (entryProgress < 1 && introFinished) {
@@ -1790,6 +1792,210 @@
       setTimeout(finish, 3500);  // 设备不支持语音时按字幕阅读节奏推进
     }
   }
+
+  /* ==========================================================
+     文旅沉浸导览（文旅新貌前六景）
+     - 高清大图覆盖全屏，缓慢平移环视 + 自由拖拽，无球面失真
+     - 左右箭头 / 底部景点栏切换，支持自动导览
+     ========================================================== */
+  const GUIDE_SPOTS = [
+    { name: '太平古镇', photo: 'images/taiping-5.webp', desc: '国家AAAA级旅游景区 · 没有围墙的红色博物馆' },
+    { name: '观文千鸟湖', photo: 'images/guanwen-lake-4.webp', desc: '网红玻璃栈道 · 万只候鸟越冬地' },
+    { name: '大黑洞景区', photo: 'images/dahei-cave/dahei-cave3.webp', desc: '国家AAAA级景区 · 苗寨民俗文化区' },
+    { name: '黄荆老林', photo: 'images/huangjing-forest/huangjing-forest3.webp', desc: '国家AAAA级景区 · 北纬28度最后的处女地' },
+    { name: '古郎景区', photo: 'images/gulang-cave/gulang-cave5.webp', desc: '国家AAAA级景区 · 川黔渝生态旅游金三角' },
+    { name: '红龙湖森林公园', photo: 'images/honglong-lake/honglong-lake4.webp', desc: '省级森林公园 · 丹霞地貌与湖光山色' }
+  ];
+
+  const guide = {
+    active: false, current: -1, front: 0,
+    x: 0, y: 0, tx: 0, ty: 0, maxX: 0, maxY: 0,
+    dragging: false, px: 0, py: 0,
+    auto: false, autoTimer: null, raf: 0, t0: performance.now()
+  };
+  const guideUi = document.getElementById('guideUi');
+  const guideStage = document.getElementById('guideStage');
+  const guideImgs = [document.getElementById('guideImgA'), document.getElementById('guideImgB')];
+  const guideTitle = document.getElementById('guideTitle');
+  const guideDesc = document.getElementById('guideDesc');
+  const guideProgress = document.getElementById('guideProgress');
+  const guideSpotsBar = document.getElementById('guideSpots');
+  const guideAutoBtn = document.getElementById('guideAuto');
+
+  /* 图片适配：覆盖屏幕并预留 15% 平移空间 */
+  function fitGuideImage(img) {
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    if (!iw || !ih) return;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const scale = Math.max(vw / iw, vh / ih) * 1.15;
+    const w = Math.round(iw * scale), h = Math.round(ih * scale);
+    img.style.width = w + 'px';
+    img.style.height = h + 'px';
+    img.dataset.w = w;
+    img.dataset.h = h;
+    guide.maxX = Math.max(0, (w - vw) / 2);
+    guide.maxY = Math.max(0, (h - vh) / 2);
+    guide.tx = Math.max(-guide.maxX, Math.min(guide.maxX, guide.tx));
+    guide.ty = Math.max(-guide.maxY, Math.min(guide.maxY, guide.ty));
+  }
+
+  function applyGuideTransform() {
+    guideImgs.forEach((img) => {
+      img.style.transform = 'translate(calc(-50% + ' + guide.x + 'px), calc(-50% + ' + guide.y + 'px))';
+    });
+  }
+
+  function switchGuideSpot(i, silent) {
+    const spot = GUIDE_SPOTS[i];
+    if (!spot) return;
+    const backImg = guideImgs[1 - guide.front];
+    const frontImg = guideImgs[guide.front];
+
+    const show = () => {
+      fitGuideImage(backImg);
+      backImg.classList.add('show');
+      frontImg.classList.remove('show');
+      guide.front = 1 - guide.front;
+      guide.current = i;
+      guide.x = 0; guide.y = 0; guide.tx = 0; guide.ty = 0;
+      guide.t0 = performance.now();
+      guideTitle.textContent = spot.name;
+      guideDesc.textContent = spot.desc;
+      guideProgress.textContent = (i + 1) + ' / ' + GUIDE_SPOTS.length;
+      guideSpotsBar.querySelectorAll('.guide-spot-btn').forEach((b, bi) => {
+        b.classList.toggle('active', bi === i);
+      });
+      if (!silent) playSound('switch');
+      /* 预加载下一张 */
+      const next = GUIDE_SPOTS[(i + 1) % GUIDE_SPOTS.length];
+      if (next) { const pre = new Image(); pre.src = next.photo; }
+    };
+
+    if (backImg.src.endsWith(spot.photo)) {
+      show();
+    } else {
+      backImg.onload = show;
+      backImg.onerror = () => {};
+      backImg.src = spot.photo;
+    }
+  }
+
+  function enterGuide() {
+    if (guide.active) return;
+    initAudio();
+    playSound('bell');
+    if (tour.active) stopTour();
+    if (infoBox.classList.contains('show')) closeInfo();
+    guide.active = true;
+    document.body.classList.add('guide-mode');
+    guideUi.classList.add('on');
+    controls.enabled = false;
+    controls.autoRotate = false;
+    switchGuideSpot(guide.current < 0 ? 0 : guide.current, true);
+    guideLoop();
+  }
+
+  function exitGuide() {
+    if (!guide.active) return;
+    playSound('switch');
+    stopGuideAuto();
+    guide.active = false;
+    cancelAnimationFrame(guide.raf);
+    document.body.classList.remove('guide-mode');
+    guideUi.classList.remove('on');
+    if (introFinished) {
+      controls.enabled = true;
+      controls.autoRotate = true;
+    }
+  }
+
+  /* 自动平移 + 阻尼跟随 */
+  function guideLoop() {
+    if (!guide.active) return;
+    guide.raf = requestAnimationFrame(guideLoop);
+    const t = (performance.now() - guide.t0) / 1000;
+    if (!guide.dragging) {
+      guide.tx = guide.maxX * Math.sin(t * 0.4);
+      guide.ty = guide.maxY * Math.sin(t * 0.26 + 1.3);
+    }
+    guide.x += (guide.tx - guide.x) * 0.06;
+    guide.y += (guide.ty - guide.y) * 0.06;
+    applyGuideTransform();
+  }
+
+  /* 自动导览：每 8 秒切换下一景 */
+  function startGuideAuto() {
+    guide.auto = true;
+    guideAutoBtn.classList.add('on');
+    guideAutoBtn.textContent = '⏸ 停止导览';
+    guide.autoTimer = setInterval(() => {
+      switchGuideSpot((guide.current + 1) % GUIDE_SPOTS.length);
+    }, 8000);
+  }
+  function stopGuideAuto() {
+    guide.auto = false;
+    guideAutoBtn.classList.remove('on');
+    guideAutoBtn.textContent = '▶ 自动导览';
+    if (guide.autoTimer) { clearInterval(guide.autoTimer); guide.autoTimer = null; }
+  }
+
+  /* 绑定导览交互 */
+  (function bindGuideEvents() {
+    const entry = document.getElementById('guideEntry');
+    if (!entry || !guideUi) return;
+    entry.addEventListener('click', enterGuide);
+    document.getElementById('guideExit').addEventListener('click', exitGuide);
+    document.getElementById('guidePrev').addEventListener('click', () => {
+      playSound('tap');
+      switchGuideSpot((guide.current - 1 + GUIDE_SPOTS.length) % GUIDE_SPOTS.length);
+    });
+    document.getElementById('guideNext').addEventListener('click', () => {
+      playSound('tap');
+      switchGuideSpot((guide.current + 1) % GUIDE_SPOTS.length);
+    });
+    guideAutoBtn.addEventListener('click', () => {
+      playSound('tap');
+      guide.auto ? stopGuideAuto() : startGuideAuto();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (!guide.active) return;
+      if (e.key === 'Escape') exitGuide();
+      if (e.key === 'ArrowLeft') switchGuideSpot((guide.current - 1 + GUIDE_SPOTS.length) % GUIDE_SPOTS.length);
+      if (e.key === 'ArrowRight') switchGuideSpot((guide.current + 1) % GUIDE_SPOTS.length);
+    });
+
+    /* 景点切换按钮 */
+    GUIDE_SPOTS.forEach((spot, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'guide-spot-btn';
+      btn.textContent = spot.name;
+      btn.addEventListener('click', () => { if (i !== guide.current) switchGuideSpot(i); });
+      guideSpotsBar.appendChild(btn);
+    });
+
+    /* 拖拽环视 */
+    guideStage.addEventListener('pointerdown', (e) => {
+      if (!guide.active) return;
+      guide.dragging = true;
+      guide.px = e.clientX;
+      guide.py = e.clientY;
+      guide.tx = guide.x;
+      guide.ty = guide.y;
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!guide.dragging) return;
+      guide.tx = Math.max(-guide.maxX, Math.min(guide.maxX, guide.tx + (e.clientX - guide.px)));
+      guide.ty = Math.max(-guide.maxY, Math.min(guide.maxY, guide.ty + (e.clientY - guide.py)));
+      guide.px = e.clientX;
+      guide.py = e.clientY;
+    });
+    window.addEventListener('pointerup', () => { guide.dragging = false; });
+    window.addEventListener('pointercancel', () => { guide.dragging = false; });
+
+    window.addEventListener('resize', () => {
+      if (guide.active) guideImgs.forEach((img) => { if (img.src) fitGuideImage(img); });
+    });
+  })();
 
   initScene();
   ensureTourUI();
