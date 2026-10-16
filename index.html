@@ -15,7 +15,10 @@
   <meta property="og:image" content="https://lzgl-38yl31m.maozi.io/images/og-cover.jpg">
   <meta property="og:url" content="https://lzgl-38yl31m.maozi.io/">
   <link rel="stylesheet" href="./css/style.css">
-  <link rel="stylesheet" href="https://registry.npmmirror.com/@waline/client/v3/files/dist/waline.css" />
+  <link rel="stylesheet" href="https://registry.npmmirror.com/@waline/client/v3/files/dist/waline.css" />
+  <!-- 站点图标 + PWA -->
+  <link rel="icon" type="image/png" href="/images/favicon-32.png">
+  <link rel="manifest" href="/manifest.json">
 </head>
 
 <!-- ========== 主页背景音乐按钮 ========== -->
@@ -1180,7 +1183,7 @@
     <p class="section-intro reveal">
       一个可以自由探索的虚拟空间。旋转、缩放、点击，触碰历史的温度。
     </p>
-    <a href="exhibit.html" class="btn-3d reveal reveal-delay-1" id="btnEnter3D">
+    <a href="/exhibit" class="btn-3d reveal reveal-delay-1" id="btnEnter3D">
       <span>进入 3D 展厅</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M5 12h14M12 5l7 7-7 7"/>
@@ -1365,6 +1368,13 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="./js/script.js"></script>
+  <script src="./js/script.js"></script>
+  <!-- 访问统计（51LA，ID 在 analytics.js 中配置）+ PWA 离线缓存 -->
+  <script src="./js/analytics.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    }
+  </script>
 </body>
 </html>

@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>3D 红色记忆展厅 | 重走长征路 · 古蔺</title>
+  <title>3D 红色记忆展厅 | 重走长征路 · 古蔺</title>
+  <!-- 站点图标 + PWA -->
+  <link rel="icon" type="image/png" href="/images/favicon-32.png">
+  <link rel="manifest" href="/manifest.json">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -346,7 +349,7 @@
   <!-- 顶部标题 -->
   <div class="exhibit-header" id="exhibitHeader">
     <div class="exhibit-title">古蔺红色记忆 · 数字展厅</div>
-    <a href="index.html" class="exhibit-close" aria-label="返回主页">
+    <a href="/" class="exhibit-close" aria-label="返回主页">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="18" y1="6" x2="6" y2="18"/>
         <line x1="6" y1="6" x2="18" y2="18"/>
@@ -462,6 +465,13 @@
   <!-- 海报二维码生成（本地库，无外部依赖） -->
   <script src="./js/vendor/qrcode.js"></script>
 
-  <script src="./js/exhibit.js?v=5"></script>
+  <script src="./js/exhibit.js?v=5"></script>
+  <!-- 访问统计 + PWA 离线缓存 -->
+  <script src="./js/analytics.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    }
+  </script>
 </body>
 </html>

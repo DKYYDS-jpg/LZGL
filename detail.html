@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>详情 | 重走长征路 · 古蔺</title>
   <link rel="stylesheet" href="./css/style.css">
+  <!-- 站点图标 + PWA -->
+  <link rel="icon" type="image/png" href="/images/favicon-32.png">
+  <link rel="manifest" href="/manifest.json">
   <!-- Three.js（3D 模型查看器，国内 npmmirror 镜像） -->
   <script src="https://registry.npmmirror.com/three/0.128.0/files/build/three.min.js"></script>
   <script src="https://registry.npmmirror.com/three/0.128.0/files/examples/js/controls/OrbitControls.js"></script>
@@ -165,7 +168,7 @@
 
     <!-- 顶部返回 -->
     <header class="detail-header">
-      <a href="index.html" class="detail-back">← 返回主页</a>
+      <a href="/" class="detail-back">← 返回主页</a>
       <div class="detail-category" id="detailCategory"></div>
     </header>
 
@@ -210,7 +213,7 @@
 
     <!-- 底部返回 -->
     <section class="detail-footer">
-      <a href="index.html" class="back-home-btn">返回主页 · 继续探索</a>
+      <a href="/" class="back-home-btn">返回主页 · 继续探索</a>
     </section>
 
   </div>
@@ -250,6 +253,13 @@
     <div class="lightbox-counter" id="lightboxCounter">1 / 3</div>
   </div>
 
-  <script src="./js/detail.js"></script>
+  <script src="./js/detail.js"></script>
+  <!-- 访问统计 + PWA 离线缓存 -->
+  <script src="./js/analytics.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lzgl-38yl31m.maozi.io/sitemap.xml
