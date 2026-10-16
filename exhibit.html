@@ -454,12 +454,14 @@
     })();
   </script>
 
-  <!-- Three.js + 两个加载器 -->
-  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
-
-  <script src="./js/exhibit.js?v=4"></script>
+  <!-- Three.js + 两个加载器（国内 npmmirror 镜像，避免 unpkg 被墙） -->
+  <script src="https://registry.npmmirror.com/three/0.128.0/files/build/three.min.js"></script>
+  <script src="https://registry.npmmirror.com/three/0.128.0/files/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://registry.npmmirror.com/three/0.128.0/files/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://registry.npmmirror.com/three/0.128.0/files/examples/js/loaders/PLYLoader.js"></script>
+  <!-- 海报二维码生成（本地库，无外部依赖） -->
+  <script src="./js/vendor/qrcode.js"></script>
+
+  <script src="./js/exhibit.js?v=5"></script>
 </body>
 </html>

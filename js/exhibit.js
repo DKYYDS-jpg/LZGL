@@ -1995,18 +1995,43 @@
       ctx.restore();
     });
 
-    // 底部落款
+    // 底部落款（日期 + 二维码 + 引导语）
     const date = new Date();
     const dstr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
-    ctx.font = '30px sans-serif';
-    ctx.fillStyle = 'rgba(240,226,200,.85)';
-    ctx.fillText('四馆集齐 · 云游圆满', W/2, H-216);
     ctx.font = '26px sans-serif';
     ctx.fillStyle = 'rgba(240,226,200,.55)';
-    ctx.fillText(`参观日期  ${dstr}`, W/2, H-160);
-    ctx.font = '22px "Noto Serif SC","SimSun",serif';
-    ctx.fillStyle = 'rgba(212,168,67,.75)';
-    ctx.fillText('—— 红韵云游 · 古蔺 3D 数字展厅 ——', W/2, H-104);
+    ctx.fillText(`参观日期  ${dstr}`, W/2, 1252);
+    ctx.font = '30px sans-serif';
+    ctx.fillStyle = 'rgba(240,226,200,.85)';
+    ctx.fillText('四馆集齐 · 云游圆满', W/2, 1304);
+
+    // 网址二维码（本地 qrcode-generator 绘制，失败不影响海报生成）
+    try {
+      if (typeof qrcode === 'function') {
+        const qr = qrcode(0, 'M');
+        qr.addData('https://lzgl-38yl31m.maozi.io/');
+        qr.make();
+        const n = qr.getModuleCount();
+        const qs = 180, pad = 16;
+        const qx = W/2 - qs/2 - pad, qy = 1328 - pad;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(qx, qy, qs + pad*2, qs + pad*2);
+        const cell = qs / n;
+        ctx.fillStyle = '#160605';
+        for (let r = 0; r < n; r++) {
+          for (let c = 0; c < n; c++) {
+            if (qr.isDark(r, c)) ctx.fillRect(W/2 - qs/2 + c*cell, 1328 + r*cell, cell + .6, cell + .6);
+          }
+        }
+        ctx.strokeStyle = 'rgba(212,168,67,.85)';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(qx, qy, qs + pad*2, qs + pad*2);
+      }
+    } catch (e) { /* 二维码不可用时静默降级 */ }
+
+    ctx.font = '24px "Noto Serif SC","SimSun",serif';
+    ctx.fillStyle = 'rgba(212,168,67,.85)';
+    ctx.fillText('扫 码 进 入 · 古蔺 3D 数 字 展 厅', W/2, H-58);
 
     const url = cv.toDataURL('image/png');
     wrap.innerHTML = `

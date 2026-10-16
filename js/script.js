@@ -849,7 +849,7 @@ if (scrollHintEl) {
   const script = document.createElement('script');
   script.type = 'module';
   script.textContent = `
-    import { init } from 'https://unpkg.com/@waline/client@v3/dist/waline.js';
+    import { init } from 'https://registry.npmmirror.com/@waline/client/v3/files/dist/waline.js';
     init({
       el: '#waline',
       serverURL: 'https://app-production-b050.up.railway.app',
