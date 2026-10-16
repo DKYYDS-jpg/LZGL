@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>重走长征路 · 古蔺 | 数字乡村服务设计</title>
+  <meta name="description" content="重走长征路，云游红色古蔺：3D数字展厅、太平古镇、黄荆老林、郎酒美食与苗族非遗，一网打尽。">
+  <meta name="keywords" content="古蔺,红色文化,长征,太平古镇,黄荆老林,郎酒,苗族非遗,3D展厅">
+  <meta name="theme-color" content="#8a1a1a">
+  <!-- 微信/QQ 分享卡片 (Open Graph) -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="重走长征路 · 古蔺 | 3D数字展厅">
+  <meta property="og:description" content="太平渡口、四渡赤水、黄荆老林、郎酒飘香——走进古蔺的红色记忆与山水人文。">
+  <meta property="og:image" content="images/taiping-1.webp">
+  <meta property="og:url" content="./index.html">
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/@waline/client@v3/dist/waline.css" />
+</head>
+
+<!-- ========== 主页背景音乐按钮 ========== -->
+<button id="musicToggle" aria-label="背景音乐">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 18V5l12-2v13"/>
+    <circle cx="6" cy="18" r="3"/>
+    <circle cx="18" cy="16" r="3"/>
+  </svg>
+</button>
+
+<style>
+  #musicToggle {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(212, 168, 67, 0.5);
+    background: rgba(10, 4, 4, 0.75);
+    backdrop-filter: blur(10px);
+    color: #f5d78e;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+  #musicToggle svg { width: 20px; height: 20px; pointer-events: none; }
+  #musicToggle:hover {
+    background: rgba(160, 24, 24, 0.7);
+    border-color: #f5d78e;
+    transform: scale(1.08);
+  }
+  #musicToggle.playing svg { animation: musicSpin 4s linear infinite; }
+  @keyframes musicSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  #musicToggle.muted {
+    color: rgba(245, 215, 142, 0.35);
+    border-color: rgba(212, 168, 67, 0.2);
+  }
+  #musicToggle.muted svg { animation: none; }
+
+  /* 封面页隐藏按钮（避免和封面冲突） */
+  body.locked #musicToggle {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    #musicToggle { bottom: 20px; right: 16px; width: 40px; height: 40px; }
+    #musicToggle svg { width: 16px; height: 16px; }
+  }
+</style>
+
+<script>
+  (function () {
+    const btn = document.getElementById('musicToggle');
+    if (!btn) return;
+
+    // 全局标志：用户是否手动暂停过音乐
+    window._userMusicOverride = false;
+
+    function getBgm() {
+      return document.getElementById('bgMusic');
+    }
+
+    function updateState() {
+      const bgm = getBgm();
+      if (!bgm) return;
+      if (bgm.paused) {
+        btn.classList.remove('playing');
+        btn.classList.add('muted');
+      } else {
+        btn.classList.add('playing');
+        btn.classList.remove('muted');
+      }
+    }
+
+    // 监听任何 audio 的 play/pause（capture 阶段）
+    document.addEventListener('play', updateState, true);
+    document.addEventListener('pause', updateState, true);
+
+    // 拦截"自动播放"——如果用户手动暂停过，就再暂停
+    document.addEventListener('play', function (e) {
+      const bgm = getBgm();
+      if (window._userMusicOverride && e.target === bgm) {
+        e.target.pause();
+      }
+    }, true);
+
+    // 按钮点击（capture 阶段，最高优先级）
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      const bgm = getBgm();
+      if (!bgm) return;
+
+      if (bgm.paused) {
+        // 恢复播放
+        window._userMusicOverride = false;
+        bgm.volume = 0.3;
+        const p = bgm.play();
+        if (p && p.catch) p.catch(() => {});
+      } else {
+        // 暂停
+        window._userMusicOverride = true;
+        bgm.pause();
+      }
+
+      setTimeout(updateState, 100);
+    }, true);
+
+    updateState();
+  })();
+</script>
+
+<script>
+  // 离开主页前保存音乐状态
+  (function () {
+    window.addEventListener('beforeunload', function () {
+      const bgm = document.getElementById('bgMusic');
+      if (bgm) {
+        sessionStorage.setItem('bgm_time', bgm.currentTime);
+        sessionStorage.setItem('bgm_playing', !bgm.paused);
+      }
+    });
+
+    // 切到后台时也保存（手机端）
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        const bgm = document.getElementById('bgMusic');
+        if (bgm) {
+          sessionStorage.setItem('bgm_time', bgm.currentTime);
+          sessionStorage.setItem('bgm_playing', !bgm.paused);
+        }
+      }
+    });
+  })();
+</script>
+
+
+<body class="locked">
+
+  <!-- ============================================================
+       进入封面
+  ============================================================ -->
+  <div class="entry-gate" id="entryGate">
+    <div class="entry-bg"></div>
+    <div class="entry-overlay"></div>
+    <div class="entry-content">
+      <div class="entry-star">★</div>
+      <h1 class="entry-title">重走长征路 · 古蔺</h1>
+      <p class="entry-subtitle">四渡赤水 · 转战54天 · 红色基因永续</p>
+      <div class="entry-divider"></div>
+      <p class="entry-hint">点击任意位置 · 进入体验</p>
+    </div>
+  </div>
+
+  <!-- 加载动画（点击封面后显示） -->
+  <div class="loader" id="loader">
+    <div class="loader-inner">
+      <div class="loader-star">★</div>
+      <div class="loader-text">重走长征路 · 古蔺</div>
+      <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+      <div class="loader-hint">正在加载古蔺的红色记忆…</div>
+    </div>
+  </div>
+
+  <!-- 粒子背景 -->
+  <div class="particles" id="particles"></div>
+
+  <!-- 背景音乐 -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="audio/bgm.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- ============================================================
+       序章
+  ============================================================ -->
+  <section class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="scroll-unroll"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">1935 · 中央红军长征入川第一县</div>
+      <h1 class="hero-title">重走长征路 · 古蔺</h1>
+      <p class="hero-subtitle">四渡赤水 · 转战54天 · 红色基因永续</p>
+      <div class="hero-divider"></div>
+      <p class="hero-desc">中央红军长征途中三进古蔺</p>
+    <p class="hero-desc">在太平渡、二郎滩两度往返</p>
+    <p class="hero-desc">以灵活机动的战略战术</p>
+    <p class="hero-desc">写下了中国革命史上最精彩的一页</p>
+    </div>
+    <div class="scroll-hint" id="scrollHint" aria-label="向下滚动查看">
+      <span>向下滚动 · 走进长征</span>
+      <div class="arrow"></div>
+    </div>
+  </section>
+
+<!-- 第一篇章 · 红色长征 -->
+<section class="chapter chapter-red" id="chapter-red">
+  <div class="chapter-marker">
+    <div class="chapter-num">壹</div>
+    <div class="chapter-title">红色长征</div>
+  </div>
+
+  <div class="section-inner">
+    <span class="section-label reveal">1935 · 赤水河畔的54个日夜</span>
+    <h2 class="section-title reveal">
+      四渡赤水出奇兵<br>
+      <span class="highlight">古蔺，长征史上最精彩的一页</span>
+    </h2>
+    <p class="section-intro reveal">
+      1935年1月至3月，中央红军在古蔺境内三进三出，转战54天，足迹遍及23个乡镇。
+      四渡赤水战役被誉为毛泽东军事指挥艺术的“得意之笔”。
+    </p>
+    
+        <!-- 四渡赤水 · 动态作战地图 -->
+    <div class="battle-map reveal">
+      <div class="battle-map-frame">
+        <video src="images/gif/ezgif-6c070964b1958677.mp4" autoplay muted loop playsinline></video>
+      </div>
+      <div class="battle-map-caption">
+        <span class="battle-map-icon">🗺️</span>
+        四渡赤水 · 中央红军转战路线动态演示
+      </div>
+    </div>
+
+    <!-- 三场关键战役 -->
+    <h3 class="subsection-title reveal">⚔️ 三场关键战役</h3>
+    <div class="battle-grid">
+      <div class="battle-card reveal reveal-delay-1">
+        <div class="battle-num">01</div>
+        <div class="battle-title">二郎滩背水战</div>
+        <div class="battle-date">1935年2月</div>
+        <p class="battle-desc">
+          红军以不足一个团的兵力，背水一战击溃敌军两个团，创造了长征以来以少胜多的经典战例。
+        </p>
+        <div class="battle-stats">
+          <div class="battle-stat">
+            <span class="battle-stat-value">1:2</span>
+            <span class="battle-stat-label">兵力对比</span>
+          </div>
+          <div class="battle-stat">
+            <span class="battle-stat-value">2</span>
+            <span class="battle-stat-label">击溃敌军</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="battle-card reveal reveal-delay-2">
+        <div class="battle-num">02</div>
+        <div class="battle-title">太平渡架浮桥</div>
+        <div class="battle-date">1935年2月</div>
+        <p class="battle-desc">
+          红军在太平渡架设浮桥3座，渡河兵力1.2万人，完成二渡赤水，挥师东进重入贵州。
+        </p>
+        <div class="battle-stats">
+          <div class="battle-stat">
+            <span class="battle-stat-value">1.2万</span>
+            <span class="battle-stat-label">渡河兵力</span>
+          </div>
+          <div class="battle-stat">
+            <span class="battle-stat-value">3座</span>
+            <span class="battle-stat-label">浮桥</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="battle-card reveal reveal-delay-3">
+        <div class="battle-num">03</div>
+        <div class="battle-title">双沙总司令部</div>
+        <div class="battle-date">1935年2月</div>
+        <p class="battle-desc">
+          红军在双沙镇设立总司令部，驻扎7天，指挥了著名的四渡赤水战役，留下大量标语和文献。
+        </p>
+        <div class="battle-stats">
+          <div class="battle-stat">
+            <span class="battle-stat-value">7天</span>
+            <span class="battle-stat-label">驻扎时间</span>
+          </div>
+          <div class="battle-stat">
+            <span class="battle-stat-value">四渡</span>
+            <span class="battle-stat-label">指挥战役</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 时间线 -->
+    <h3 class="subsection-title reveal">🕰️ 四渡赤水 · 时间线</h3>
+    <div class="timeline">
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-year">1935年1月 · 入川</div>
+          <div class="timeline-title">中央红军长征入川第一桥</div>
+          <div class="timeline-text">
+            红军从贵州土城出发，经岩桑沟兴桥进入四川古蔺境内，打响了入川第一枪。
+            这座桥因此被称为“中央红军长征入川第一桥”。
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-year">1935年2月 · 二渡</div>
+          <div class="timeline-title">太平渡渡口 · 二渡赤水</div>
+          <div class="timeline-text">
+            红军在太平渡、二郎滩架设浮桥，挥师东进，重入贵州，
+            取得了长征以来最大的一次胜利——娄山关大捷。
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-year">1935年3月 · 三渡</div>
+          <div class="timeline-title">二郎滩背水战 · 开仓分盐</div>
+          <div class="timeline-text">
+            红军与敌军激战，以少胜多。随后打开盐仓，将食盐分给穷苦百姓，
+            赢得了群众的衷心拥护。当地至今流传着“红军盐”的佳话。
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-item reveal">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-year">1935年3月 · 四渡</div>
+          <div class="timeline-title">四渡赤水 · 太平渡再渡</div>
+          <div class="timeline-text">
+            红军从太平渡、二郎滩第四次渡过赤水河，南渡乌江，
+            彻底摆脱了数十万敌军的围追堵截，写下了军事史上的传奇。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 船工故事 -->
+    <h3 class="subsection-title reveal">📖 一个船工的记忆</h3>
+    <div class="story-card reveal">
+      <div class="story-quote-mark">"</div>
+      <div class="story-content">
+        <p class="story-text">
+          红军来的时候，我才十七岁。他们借我家门板架浮桥，临走时还留了张字条，说‘日后一定归还’。
+          后来红军真的回来了，门板上刻满了印记。父亲说，这是红军讲信用的证据。
+        </p>
+        <div class="story-author">
+          <div class="story-avatar">👤</div>
+          <div class="story-author-info">
+            <div class="story-name">王二娃</div>
+            <div class="story-role">太平渡船工 · 口述史料</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 七律诗 -->
+    <div class="poem-block reveal">
+      <div class="poem-deco-top">❖</div>
+      <div class="poem-title">七律 · 长征</div>
+      <div class="poem-text">
+        红军不怕远征难，万水千山只等闲。<br>
+        五岭逶迤腾细浪，乌蒙磅礴走泥丸。<br>
+        金沙水拍云崖暖，大渡桥横铁索寒。<br>
+        更喜岷山千里雪，三军过后尽开颜。
+      </div>
+      <div class="poem-source">—— 毛泽东 · 1935年10月</div>
+      <div class="poem-deco-bottom">❖</div>
+    </div>
+
+    <!-- 数据可视化（保持不变） -->
+    <div class="data-section reveal">
+      <h3 class="subsection-title">📊 数据看今朝</h3>
+      <div class="stat-highlights">
+        <div class="stat-highlight"><div class="stat-number" data-target="54">0</div><div class="stat-label">红军转战古蔺天数</div></div>
+        <div class="stat-highlight"><div class="stat-number" data-target="23">0</div><div class="stat-label">足迹遍及乡镇数</div></div>
+        <div class="stat-highlight"><div class="stat-number" data-target="4">0</div><div class="stat-label">四渡赤水次数</div></div>
+        <div class="stat-highlight"><div class="stat-number" data-target="30" data-suffix="万+">0</div><div class="stat-label">菜花季累计游客</div></div>
+      </div>
+
+      <div class="data-grid">
+        <div class="data-card">
+          <div class="data-title">红色旅游游客量（万人次）</div>
+          <div class="data-chart">
+            <div class="bar-group">
+              <div class="bar" data-value="12" data-label="2022年"><span>2022</span></div>
+              <div class="bar" data-value="21" data-label="2023年"><span>2023</span></div>
+              <div class="bar" data-value="28" data-label="2024年"><span>2024</span></div>
+              <div class="bar highlight" data-value="35" data-label="2025年"><span>2025</span></div>
+            </div>
+          </div>
+          <div class="data-value">↑ 持续增长</div>
+          <div class="data-desc">白沙场镇菜花季累计游客量</div>
+        </div>
+
+        <div class="data-card">
+          <div class="data-title">农产品地理标志</div>
+          <div class="data-chart">
+            <div class="pie-chart">
+              <svg viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(212,168,67,0.15)" stroke-width="12"/>
+                <circle class="pie-segment" cx="50" cy="50" r="40" fill="none" stroke="#a01818" stroke-width="12" stroke-dasharray="0 251" stroke-dashoffset="0" transform="rotate(-90 50 50)" data-dash="100" data-offset="0" data-label="麻辣鸡" data-value="国家地理标志"/>
+                <circle class="pie-segment" cx="50" cy="50" r="40" fill="none" stroke="#d4a843" stroke-width="12" stroke-dasharray="0 251" stroke-dashoffset="0" transform="rotate(-90 50 50)" data-dash="62" data-offset="-100" data-label="赶黄草" data-value="国家地理标志"/>
+                <circle class="pie-segment" cx="50" cy="50" r="40" fill="none" stroke="#8cbc6c" stroke-width="12" stroke-dasharray="0 251" stroke-dashoffset="0" transform="rotate(-90 50 50)" data-dash="50" data-offset="-162" data-label="丫杈猪 · 古蔺面" data-value="国家地理标志"/>
+              </svg>
+            </div>
+          </div>
+          <div class="data-value">4 项</div>
+          <div class="data-desc">麻辣鸡 · 赶黄草 · 丫杈猪 · 古蔺面</div>
+        </div>
+
+        <div class="data-card">
+          <div class="data-title">2025 农产品产值（亿元）</div>
+          <div class="data-chart-horizontal">
+            <div class="h-bar-row" data-label="古蔺甜橙" data-value="8.2 亿元">
+              <div class="h-bar-label">甜橙</div>
+              <div class="h-bar-track"><div class="h-bar-fill" data-value="8.2" data-max="10"></div></div>
+              <div class="h-bar-value">8.2</div>
+            </div>
+            <div class="h-bar-row" data-label="古蔺麻辣鸡" data-value="5.6 亿元">
+              <div class="h-bar-label">麻辣鸡</div>
+              <div class="h-bar-track"><div class="h-bar-fill" data-value="5.6" data-max="10"></div></div>
+              <div class="h-bar-value">5.6</div>
+            </div>
+            <div class="h-bar-row" data-label="古蔺赶黄草" data-value="3.4 亿元">
+              <div class="h-bar-label">赶黄草</div>
+              <div class="h-bar-track"><div class="h-bar-fill" data-value="3.4" data-max="10"></div></div>
+              <div class="h-bar-value">3.4</div>
+            </div>
+            <div class="h-bar-row" data-label="古蔺面" data-value="2.8 亿元">
+              <div class="h-bar-label">古蔺面</div>
+              <div class="h-bar-track"><div class="h-bar-fill" data-value="2.8" data-max="10"></div></div>
+              <div class="h-bar-value">2.8</div>
+            </div>
+          </div>
+          <div class="data-value">20.0 亿</div>
+          <div class="data-desc">古蔺特色农产品年总产值</div>
+        </div>
+      </div>
+
+      <div class="chart-tooltip" id="chartTooltip">
+        <div class="tooltip-label"></div>
+        <div class="tooltip-value"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+  <!-- ============================================================
+       时空转场
+  ============================================================ -->
+  <section class="section-transition" id="transition">
+    <div class="parallax-layer parallax-bg" data-speed="0.3"></div>
+    <div class="parallax-layer parallax-mid" data-speed="0.6"></div>
+    <div class="parallax-layer parallax-fg" data-speed="1.0"></div>
+    <div class="transition-content">
+      <div class="transition-eyebrow reveal">从 1935 到 2026</div>
+      <h2 class="transition-quote reveal">硝烟散去，长征精神生生不息</h2>
+      <p class="transition-sub reveal reveal-delay-1">
+        八十九载光阴流转，赤水河依旧奔涌向前。<br>
+        今天的古蔺，以另一种方式续写着红色的传奇。
+      </p>
+    </div>
+  </section>
+
+<!-- 第二篇章 · 今日古蔺 -->
+<section class="chapter chapter-new" id="chapter-new">
+  <div class="chapter-marker">
+    <div class="chapter-num">贰</div>
+    <div class="chapter-title">今日古蔺</div>
+  </div>
+
+  <div class="section-inner">
+    <span class="section-label reveal">2026 · 红韵新貌</span>
+    <h2 class="section-title reveal">
+      从长征战场到<span class="highlight">文旅胜地与美食之乡</span>
+    </h2>
+    <p class="section-intro reveal">
+      古蔺把红色基因融入了新时代的每一寸土地。
+      今天，它是一座没有围墙的红色博物馆，也是一座让人流连忘返的美食之城。
+    </p>
+
+    <!-- ========== 文旅新貌 ========== -->
+    <h3 class="subsection-title reveal">🏞️ 文旅新貌</h3>
+    <div class="modern-grid">
+
+      <div class="modern-card reveal reveal-delay-1" data-id="taiping">
+        <div class="card-image"><img src="images/taiping-1.webp" alt="太平古镇" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">太平古镇</h3>
+          <p class="card-desc">国家AAAA级旅游景区 · 没有围墙的红色博物馆</p>
+          <div class="tag-list"><span class="tag">最热门</span><span class="tag">四渡赤水核心IP</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal reveal-delay-2" data-id="lake">
+        <div class="card-image"><img src="images/guanwen-lake.webp" alt="观文千鸟湖" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">观文千鸟湖</h3>
+          <p class="card-desc">网红玻璃栈道 · 万只候鸟越冬地</p>
+          <div class="tag-list"><span class="tag">网红新地标</span><span class="tag">生态旅游</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal reveal-delay-3" data-id="daheidong">
+        <div class="card-image"><img src="images/dahei-cave/dahei-cave1.webp" alt="大黑洞景区" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">大黑洞景区</h3>
+          <p class="card-desc">国家AAAA级景区 · 苗寨民俗文化区</p>
+          <div class="tag-list"><span class="tag">踩山节</span><span class="tag">溶洞奇观</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal" data-id="huangjing">
+        <div class="card-image"><img src="images/huangjing-forest/huangjing-forest1.webp" alt="黄荆老林" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">黄荆老林</h3>
+          <p class="card-desc">国家AAAA级景区 · 北纬28度最后的处女地</p>
+          <div class="tag-list"><span class="tag">原始林海</span><span class="tag">森林覆盖率98%</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal reveal-delay-1" data-id="gulang">
+        <div class="card-image"><img src="images/gulang-cave/gulang-cave1.webp" alt="古郎景区" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">古郎景区</h3>
+          <p class="card-desc">国家AAAA级景区 · 川黔渝生态旅游金三角</p>
+          <div class="tag-list"><span class="tag">白垩纪溶洞</span><span class="tag">峡谷探秘</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal reveal-delay-2" data-id="honglonghu">
+        <div class="card-image"><img src="images/honglong-lake/honglong-lake1.webp" alt="红龙湖森林公园" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">红龙湖森林公园</h3>
+          <p class="card-desc">省级森林公园 · 丹霞地貌与湖光山色</p>
+          <div class="tag-list"><span class="tag">省级公园</span><span class="tag">高山湖泊</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal reveal-delay-3" data-id="shuangsha">
+        <div class="card-image"><img src="images/flower-sea.webp" alt="双沙花海" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">双沙花海</h3>
+          <p class="card-desc">连续16届菜花节 · 累计游客超30万人次</p>
+          <div class="tag-list"><span class="tag">农旅融合</span><span class="tag">春日限定</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal" data-id="jianzhu">
+        <div class="card-image"><img src="images/miao-town/miao-village1.webp" alt="箭竹苗族乡" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">箭竹苗族乡</h3>
+          <p class="card-desc">古蔺景点人气榜第1名 · 地质奇观+红色记忆</p>
+          <div class="tag-list"><span class="tag">人气榜第1</span><span class="tag">苗乡风情</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal reveal-delay-1" data-id="mashi-scene">
+        <div class="card-image"><img src="images/masi-tea-1.webp" alt="马嘶苗族乡" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">马嘶苗族乡</h3>
+          <p class="card-desc">沉浸式茶旅廊道 · 茶马古道活态博物馆</p>
+          <div class="tag-list"><span class="tag">茶旅融合</span><span class="tag">苗乡文化</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========== 美食古蔺 ========== -->
+    <h3 class="subsection-title reveal" style="margin-top:70px;">🍜 美食古蔺</h3>
+    <div class="food-grid">
+
+      <div class="food-card reveal reveal-delay-1" data-id="chicken">
+        <div class="food-image"><img src="images/gulin-malaji-1.webp" alt="古蔺麻辣鸡" loading="lazy"></div>
+        <div class="food-body">
+          <div class="food-name">古蔺麻辣鸡</div>
+          <div class="food-tag">美食界“一哥”</div>
+          <p class="food-desc">国家地理标志 · 央视《舌尖上的中国2》推荐</p>
+        </div>
+      </div>
+
+      <div class="food-card reveal reveal-delay-2" data-id="noodle">
+        <div class="food-image"><img src="images/gulin-noodle-1.webp" alt="古蔺手工面" loading="lazy"></div>
+        <div class="food-body">
+          <div class="food-name">古蔺手工面</div>
+          <div class="food-tag">产值3.3亿</div>
+          <p class="food-desc">国家地理标志 · 远销9个国家</p>
+        </div>
+      </div>
+
+      <div class="food-card reveal reveal-delay-3" data-id="herb">
+        <div class="food-image"><img src="images/ganhuangcao-1.webp" alt="古蔺赶黄草" loading="lazy"></div>
+        <div class="food-body">
+          <div class="food-name">古蔺赶黄草</div>
+          <div class="food-tag">产值15亿</div>
+          <p class="food-desc">国家地理标志 · 苗族“神仙草”</p>
+        </div>
+      </div>
+
+      <div class="food-card reveal" data-id="shibao">
+        <div class="food-image"><img src="images/red-soup-mutton/mutton1.webp" alt="石宝红汤羊肉" loading="lazy"></div>
+        <div class="food-body">
+          <div class="food-name">石宝红汤羊肉</div>
+          <div class="food-tag">省级名菜</div>
+          <p class="food-desc">羊肉文化节吸引游客超15万人次</p>
+        </div>
+      </div>
+
+      <div class="food-card reveal reveal-delay-1" data-id="pork">
+        <div class="food-image"><img src="images/larou.webp" alt="古蔺丫杈猪" loading="lazy"></div>
+        <div class="food-body">
+          <div class="food-name">古蔺丫杈猪</div>
+          <div class="food-tag">国家保护品种</div>
+          <p class="food-desc">国家地理标志 · 老腊肉是古蔺年味</p>
+        </div>
+      </div>
+
+      <div class="food-card reveal reveal-delay-2" data-id="wine">
+        <div class="food-image"><img src="images/langjiu.webp" alt="郎酒" loading="lazy"></div>
+        <div class="food-body">
+          <div class="food-name">郎酒</div>
+          <div class="food-tag">两大酱香</div>
+          <p class="food-desc">中国两大酱香白酒之一 · 郎酒庄园年接待20万人次</p>
+        </div>
+      </div>
+
+      <div class="food-card reveal reveal-delay-3" data-id="orange">
+        <div class="food-image"><img src="images/gulin-orange-1.webp" alt="古蔺甜橙" loading="lazy"></div>
+        <div class="food-body">
+          <div class="food-name">古蔺甜橙</div>
+          <div class="food-tag">国家地理标志</div>
+          <p class="food-desc">赤水河谷孕育 · 皮薄多汁酸甜适口</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 美食 · 更多风味（标签云） -->
+    <div class="more-section reveal">
+      <div class="more-title">
+        <span>🍽️ 更多古蔺风味</span>
+        <span class="more-hint">点击标签查看详情</span>
+      </div>
+      <div class="tag-cloud">
+        <a class="cloud-tag" data-id="tofu">石屏包浆豆腐</a>
+        <a class="cloud-tag" data-id="yongle">永乐羊肉汤</a>
+        <a class="cloud-tag" data-id="hotpot">古蔺钟跷脚火锅</a>
+        <a class="cloud-tag" data-id="longtable">苗家长桌宴</a>
+        <a class="cloud-tag" data-id="beef">毛条牛肉干</a>
+      </div>
+    </div>
+
+    <!-- ========== 非遗传承 ========== -->
+    <h3 class="subsection-title reveal" style="margin-top:70px;">🏮 非遗传承</h3>
+    <div class="modern-grid">
+
+      <div class="modern-card reveal" data-id="lantern">
+        <div class="card-image"><img src="images/gulin-lantern-1.webp" alt="古蔺花灯" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">古蔺花灯</h3>
+          <p class="card-desc">国家级非遗 · 传承人短视频播放超7000万次</p>
+          <div class="tag-list"><span class="tag">国家级非遗</span><span class="tag">花灯之乡</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal reveal-delay-1" data-id="caishanjie">
+        <div class="card-image"><img src="images/caishan-festival/caishan-festival1.webp" alt="大寨宝佤踩山节" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">大寨宝佤踩山节</h3>
+          <p class="card-desc">省级非遗 · 2026年吸引约5万游客</p>
+          <div class="tag-list"><span class="tag">省级非遗</span><span class="tag">苗乡盛会</span></div>
+        </div>
+      </div>
+
+
+      <div class="modern-card reveal reveal-delay-1" data-id="batik">
+        <div class="card-image"><img src="images/batik/batik1.webp" alt="苗族蜡染技艺" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">苗族蜡染技艺</h3>
+          <p class="card-desc">县级非遗 · 带动1000余人居家就业</p>
+          <div class="tag-list"><span class="tag">活态传承</span><span class="tag">远销海外</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal reveal-delay-2" data-id="embroidery">
+        <div class="card-image"><img src="images/embroidery/embroidery1.webp" alt="苗族刺绣技艺" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">苗族刺绣技艺</h3>
+          <p class="card-desc">县级非遗 · 纹样精美，色彩丰富</p>
+          <div class="tag-list"><span class="tag">传统技艺</span><span class="tag">正申报市级</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal reveal-delay-3" data-id="lusheng">
+        <div class="card-image"><img src="images/lusheng/lusheng5.webp" alt="芦笙制作技艺" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">芦笙制作技艺</h3>
+          <p class="card-desc">县级非遗 · 可追溯至清朝陶氏一脉</p>
+          <div class="tag-list"><span class="tag">传统乐器</span><span class="tag">苗乡记忆</span></div>
+        </div>
+      </div>
+
+      <div class="modern-card reveal" data-id="woodcarving">
+        <div class="card-image"><img src="images/root-carving.webp" alt="黄荆根雕工艺" loading="lazy"><div class="card-image-overlay"></div></div>
+        <div class="card-body">
+          <h3 class="card-title">黄荆根雕工艺</h3>
+          <p class="card-desc">传统美术 · 依形就势，古朴自然</p>
+          <div class="tag-list"><span class="tag">传统美术</span><span class="tag">黄荆老林</span></div>
+        </div>
+      </div>
+
+    </div>
+
+
+
+  </div>
+</section>
+
+  <!-- ============================================================
+       数字互动 · 红色地图
+  ============================================================ -->
+  <section class="section-interactive" id="interactive">
+    <div class="section-inner">
+      <span class="section-label reveal">数字服务 · 互动体验</span>
+      <h2 class="section-title reveal">
+        点亮古蔺<span class="highlight">红色地图</span>
+      </h2>
+      <p class="section-intro reveal">
+        点击地图上的地标，点亮红色遗址，了解历史故事，获取红色积分。
+        每点亮一个地标，积1分；集满5分，可解锁专属纪念海报与云认养资格。
+      </p>
+
+      <div class="map-museum reveal">
+        <div class="map-frame">
+          <div class="map-title-bar">
+            <div class="map-title">中央红军四渡赤水 · 古蔺转战路线图</div>
+            <div class="map-subtitle">1935年1月 — 1935年3月 ｜ 中国工农红军第一方面军</div>
+          </div>
+          <div class="map-body">
+            <svg class="vintage-map" viewBox="0 0 1000 720" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <filter id="paperGrain" x="0%" y="0%" width="100%" height="100%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="6" seed="18" result="noise"/>
+                  <feColorMatrix in="noise" type="saturate" values="0" result="gray"/>
+                  <feComponentTransfer in="gray" result="grain">
+                    <feFuncA type="linear" slope="0.16" intercept="0"/>
+                  </feComponentTransfer>
+                  <feComposite in="SourceGraphic" in2="grain" operator="over"/>
+                </filter>
+                <filter id="paperFiber" x="0%" y="0%" width="100%" height="100%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.012 0.85" numOctaves="4" seed="42" result="fiber"/>
+                  <feColorMatrix in="fiber" type="saturate" values="0" result="grayF"/>
+                  <feComponentTransfer in="grayF" result="faint">
+                    <feFuncA type="linear" slope="0.1"/>
+                  </feComponentTransfer>
+                  <feComposite in="SourceGraphic" in2="faint" operator="over"/>
+                </filter>
+                <filter id="waterStain" x="-20%" y="-20%" width="140%" height="140%">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" seed="99" result="stain"/>
+                  <feColorMatrix in="stain" type="saturate" values="0" result="grayS"/>
+                  <feComponentTransfer in="grayS">
+                    <feFuncA type="linear" slope="0.35" intercept="-0.1"/>
+                  </feComponentTransfer>
+                  <feGaussianBlur stdDeviation="2"/>
+                </filter>
+                <filter id="softBlur"><feGaussianBlur stdDeviation="3"/></filter>
+
+                <radialGradient id="agedPaper" cx="46%" cy="42%" r="82%">
+                  <stop offset="0%" stop-color="#f0e3c4"/>
+                  <stop offset="30%" stop-color="#e8d8b0"/>
+                  <stop offset="60%" stop-color="#d8c49a"/>
+                  <stop offset="85%" stop-color="#c0a878"/>
+                  <stop offset="100%" stop-color="#a88858"/>
+                </radialGradient>
+                <radialGradient id="edgeBurn" cx="50%" cy="50%" r="72%">
+                  <stop offset="0%" stop-color="transparent"/>
+                  <stop offset="65%" stop-color="transparent"/>
+                  <stop offset="85%" stop-color="rgba(110,75,35,0.15)"/>
+                  <stop offset="95%" stop-color="rgba(90,55,20,0.35)"/>
+                  <stop offset="100%" stop-color="rgba(60,35,10,0.55)"/>
+                </radialGradient>
+                <radialGradient id="stainColor">
+                  <stop offset="0%" stop-color="rgba(140,100,55,0.4)"/>
+                  <stop offset="60%" stop-color="rgba(140,100,55,0.15)"/>
+                  <stop offset="100%" stop-color="rgba(140,100,55,0)"/>
+                </radialGradient>
+                <linearGradient id="highLand" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#a07858"/>
+                  <stop offset="100%" stop-color="#b89878"/>
+                </linearGradient>
+                <linearGradient id="midLand" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#c0a880"/>
+                  <stop offset="100%" stop-color="#d0c098"/>
+                </linearGradient>
+                <linearGradient id="lowLand" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#d0c498"/>
+                  <stop offset="100%" stop-color="#e0d4ac"/>
+                </linearGradient>
+                <linearGradient id="valleyLand" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#dcd4a8"/>
+                  <stop offset="100%" stop-color="#e8e0bc"/>
+                </linearGradient>
+                <linearGradient id="riverMain" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#5a7a94"/>
+                  <stop offset="50%" stop-color="#7a9ab0"/>
+                  <stop offset="100%" stop-color="#5a7a94"/>
+                </linearGradient>
+                <marker id="routeArrow" viewBox="0 0 12 12" refX="9" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                  <path d="M 0 1 L 12 6 L 0 11 L 3 6 Z" fill="#8a1414"/>
+                </marker>
+                <symbol id="ferryStar" viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="16" fill="#a01818" stroke="#f0e3c4" stroke-width="2.5"/>
+                  <circle cx="20" cy="20" r="12" fill="none" stroke="rgba(240,227,196,0.4)" stroke-width="0.8"/>
+                  <path d="M20 8 L22.8 16.5 L31.5 16.5 L24.5 21.6 L27.2 30.5 L20 25.3 L12.8 30.5 L15.5 21.6 L8.5 16.5 L17.2 16.5 Z"
+                        fill="#f5d78e" stroke="#8a1414" stroke-width="0.6"/>
+                </symbol>
+                <linearGradient id="foldH" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(90,60,30,0)"/>
+                  <stop offset="45%" stop-color="rgba(90,60,30,0.12)"/>
+                  <stop offset="50%" stop-color="rgba(60,35,10,0.28)"/>
+                  <stop offset="55%" stop-color="rgba(90,60,30,0.12)"/>
+                  <stop offset="100%" stop-color="rgba(90,60,30,0)"/>
+                </linearGradient>
+                <linearGradient id="foldV" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="rgba(90,60,30,0)"/>
+                  <stop offset="45%" stop-color="rgba(90,60,30,0.1)"/>
+                  <stop offset="50%" stop-color="rgba(60,35,10,0.22)"/>
+                  <stop offset="55%" stop-color="rgba(90,60,30,0.1)"/>
+                  <stop offset="100%" stop-color="rgba(90,60,30,0)"/>
+                </linearGradient>
+              </defs>
+
+              <rect width="1000" height="720" fill="url(#agedPaper)"/>
+              <rect width="1000" height="720" fill="url(#agedPaper)" filter="url(#paperGrain)"/>
+              <rect width="1000" height="720" fill="transparent" filter="url(#paperFiber)"/>
+
+              <path d="M 140 130 Q 250 70, 400 60 Q 520 55, 620 90 Q 700 115, 720 180 Q 700 220, 640 235 Q 560 250, 460 245 Q 340 240, 240 260 Q 170 270, 140 250 Q 110 220, 140 130 Z"
+                    fill="url(#highLand)" opacity="0.8"/>
+              <path d="M 180 280 Q 280 250, 420 255 Q 560 260, 660 285 Q 730 305, 760 360 Q 770 420, 740 470 Q 690 510, 580 500 Q 440 490, 320 510 Q 220 520, 175 490 Q 145 450, 155 380 Q 160 320, 180 280 Z"
+                    fill="url(#midLand)" opacity="0.72"/>
+              <path d="M 220 530 Q 340 510, 480 515 Q 620 520, 720 545 Q 790 565, 800 610 Q 780 660, 680 675 Q 540 685, 400 680 Q 280 670, 200 640 Q 155 605, 175 570 Q 190 545, 220 530 Z"
+                    fill="url(#lowLand)" opacity="0.6"/>
+              <path d="M 100 440 Q 250 410, 380 385 Q 480 365, 560 320 Q 640 275, 720 280 Q 810 285, 900 320 L 900 355 Q 810 320, 720 318 Q 640 315, 560 360 Q 480 405, 380 425 Q 250 450, 100 475 Z"
+                    fill="url(#valleyLand)" opacity="0.7"/>
+
+              <g filter="url(#softBlur)" opacity="0.5">
+                <ellipse cx="280" cy="180" rx="90" ry="45" fill="url(#stainColor)"/>
+                <ellipse cx="420" cy="160" rx="110" ry="50" fill="url(#stainColor)"/>
+                <ellipse cx="560" cy="180" rx="95" ry="42" fill="url(#stainColor)"/>
+                <ellipse cx="660" cy="210" rx="70" ry="35" fill="url(#stainColor)"/>
+                <ellipse cx="300" cy="340" rx="100" ry="45" fill="url(#stainColor)"/>
+                <ellipse cx="480" cy="330" rx="120" ry="50" fill="url(#stainColor)"/>
+                <ellipse cx="640" cy="360" rx="90" ry="40" fill="url(#stainColor)"/>
+                <ellipse cx="320" cy="600" rx="110" ry="45" fill="url(#stainColor)"/>
+                <ellipse cx="520" cy="600" rx="130" ry="50" fill="url(#stainColor)"/>
+                <ellipse cx="700" cy="620" rx="95" ry="40" fill="url(#stainColor)"/>
+              </g>
+
+              <g class="contour-lines" fill="none" stroke="#7a5a38" stroke-width="0.5" opacity="0.55">
+                <path d="M 180 200 Q 280 160, 400 165 Q 520 170, 620 195 Q 690 215, 700 250"/>
+                <path d="M 190 220 Q 290 180, 410 185 Q 530 190, 625 215 Q 690 235, 700 270"/>
+                <path d="M 200 240 Q 300 200, 420 205 Q 540 210, 630 235 Q 690 255, 695 285"/>
+                <path d="M 215 258 Q 310 220, 425 225 Q 545 230, 630 253 Q 685 270, 690 300"/>
+                <path d="M 230 300 Q 340 275, 460 280 Q 580 285, 660 305 Q 720 322, 730 355"/>
+                <path d="M 240 320 Q 350 295, 465 300 Q 585 305, 665 325 Q 725 342, 735 375"/>
+                <path d="M 250 340 Q 360 315, 470 320 Q 590 325, 670 345 Q 730 362, 735 395"/>
+                <path d="M 255 360 Q 365 335, 475 340 Q 595 345, 670 365 Q 725 382, 730 415"/>
+                <path d="M 260 385 Q 370 360, 480 365 Q 595 370, 665 388 Q 715 405, 720 435"/>
+                <path d="M 260 410 Q 365 390, 475 395 Q 585 400, 655 415 Q 705 430, 710 458"/>
+                <path d="M 260 540 Q 380 515, 500 518 Q 620 521, 700 542 Q 760 558, 770 590"/>
+                <path d="M 270 560 Q 385 535, 505 538 Q 625 541, 705 562 Q 762 578, 772 608"/>
+                <path d="M 285 580 Q 390 555, 510 558 Q 630 561, 705 580 Q 755 595, 765 622"/>
+                <path d="M 300 600 Q 400 578, 515 580 Q 630 582, 700 598 Q 745 610, 755 635"/>
+              </g>
+
+              <g class="mountain-hatch" stroke="#7a5a38" stroke-width="0.4" fill="none" opacity="0.4">
+                <path d="M 260 170 L 280 145 M 290 175 L 310 150 M 320 180 L 340 155 M 360 180 L 380 155 M 400 178 L 420 153"/>
+                <path d="M 440 175 L 460 150 M 480 172 L 500 148 M 520 175 L 540 152 M 560 178 L 580 155"/>
+                <path d="M 320 320 L 340 295 M 360 325 L 380 300 M 400 328 L 420 303 M 440 325 L 460 300 M 480 322 L 500 297"/>
+                <path d="M 380 560 L 400 535 M 430 562 L 450 538 M 480 565 L 500 540 M 530 562 L 550 538 M 580 560 L 600 535"/>
+              </g>
+
+              <g class="river-system">
+                <path d="M 80 460 Q 180 435, 280 420 Q 360 408, 420 375 Q 480 340, 540 310 Q 620 270, 700 268 Q 800 265, 920 300"
+                      fill="none" stroke="rgba(120,150,170,0.3)" stroke-width="18" stroke-linecap="round"/>
+                <path d="M 80 460 Q 180 435, 280 420 Q 360 408, 420 375 Q 480 340, 540 310 Q 620 270, 700 268 Q 800 265, 920 300"
+                      fill="none" stroke="url(#riverMain)" stroke-width="9" stroke-linecap="round"/>
+                <path d="M 80 460 Q 180 435, 280 420 Q 360 408, 420 375 Q 480 340, 540 310 Q 620 270, 700 268 Q 800 265, 920 300"
+                      fill="none" stroke="rgba(220,240,250,0.55)" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 8"/>
+                <g stroke="#7a9ab0" stroke-width="1.5" fill="none" opacity="0.7">
+                  <path d="M 350 195 Q 400 260, 420 320"/>
+                  <path d="M 500 200 Q 530 260, 545 305"/>
+                  <path d="M 620 220 Q 650 255, 680 265"/>
+                  <path d="M 250 540 Q 300 490, 310 440"/>
+                  <path d="M 480 580 Q 500 480, 520 420"/>
+                </g>
+                <text x="150" y="452" class="river-label" transform="rotate(-8 150 452)">赤 水 河</text>
+                <text x="600" y="265" class="river-label" transform="rotate(-2 600 265)">赤 水 河</text>
+              </g>
+
+              <g class="trails" stroke="#6a4a28" stroke-width="1" fill="none" stroke-dasharray="3 5" opacity="0.5">
+                <path d="M 200 300 Q 280 320, 380 310 Q 480 300, 560 320"/>
+                <path d="M 380 310 Q 400 380, 420 440"/>
+                <path d="M 560 320 Q 620 380, 660 440"/>
+                <path d="M 250 480 Q 350 500, 450 490 Q 550 480, 650 500"/>
+              </g>
+
+              <g class="villages" fill="#4a2e12">
+                <circle cx="240" cy="260" r="2.5"/><circle cx="320" cy="245" r="2.5"/>
+                <circle cx="410" cy="250" r="2.5"/><circle cx="500" cy="248" r="2.5"/>
+                <circle cx="580" cy="255" r="2.5"/><circle cx="680" cy="270" r="2.5"/>
+                <circle cx="280" cy="360" r="2.5"/><circle cx="400" cy="355" r="2.5"/>
+                <circle cx="520" cy="350" r="2.5"/><circle cx="620" cy="365" r="2.5"/>
+                <circle cx="300" cy="500" r="2.5"/><circle cx="420" cy="495" r="2.5"/>
+                <circle cx="540" cy="498" r="2.5"/><circle cx="660" cy="510" r="2.5"/>
+                <circle cx="180" cy="430" r="2.5"/><circle cx="220" cy="600" r="2.5"/>
+                <circle cx="360" cy="605" r="2.5"/><circle cx="500" cy="610" r="2.5"/>
+                <circle cx="620" cy="605" r="2.5"/><circle cx="700" cy="620" r="2.5"/>
+              </g>
+              <g class="village-labels" font-family="STKaiti, KaiTi, serif" font-size="9" fill="#4a2e12" opacity="0.75">
+                <text x="245" y="255">石宝</text><text x="510" y="243">龙山</text>
+                <text x="290" y="355">椒园</text><text x="630" y="360">马蹄</text>
+                <text x="310" y="495">观文</text><text x="430" y="490">大村</text>
+                <text x="550" y="493">二郎</text><text x="370" y="600">石屏</text>
+                <text x="510" y="605">金星</text><text x="630" y="600">水口</text>
+              </g>
+
+              <g class="route-shadow" fill="none" stroke="rgba(60,20,5,0.3)" stroke-width="5" transform="translate(2, 2.5)">
+                <path d="M 95 470 Q 200 445, 300 430 Q 380 420, 440 390"/>
+                <path d="M 440 390 Q 460 340, 460 300 Q 460 265, 470 240"/>
+                <path d="M 470 240 Q 560 230, 660 245 Q 750 258, 850 275"/>
+                <path d="M 440 660 Q 460 590, 490 520 Q 520 460, 555 420"/>
+                <path d="M 555 420 Q 630 380, 700 350 Q 780 320, 870 320"/>
+              </g>
+              <g class="red-army-routes" fill="none" stroke="#8a1414" stroke-width="3" stroke-dasharray="11 6" marker-end="url(#routeArrow)">
+                <path class="route-line route-1" d="M 95 470 Q 200 445, 300 430 Q 380 420, 440 390"/>
+                <path class="route-line route-1b" d="M 440 390 Q 460 340, 460 300 Q 460 265, 470 240"/>
+                <path class="route-line route-2" d="M 470 240 Q 560 230, 660 245 Q 750 258, 850 275"/>
+                <path class="route-line route-3" d="M 440 660 Q 460 590, 490 520 Q 520 460, 555 420"/>
+                <path class="route-line route-4" d="M 555 420 Q 630 380, 700 350 Q 780 320, 870 320"/>
+              </g>
+
+              <g class="route-numbers">
+                <circle cx="200" cy="440" r="15" fill="#8a1414" stroke="#f0e3c4" stroke-width="2.5"/>
+                <text x="200" y="446" class="route-num">①</text>
+                <circle cx="660" cy="248" r="15" fill="#8a1414" stroke="#f0e3c4" stroke-width="2.5"/>
+                <text x="660" y="254" class="route-num">②</text>
+                <circle cx="460" cy="600" r="15" fill="#8a1414" stroke="#f0e3c4" stroke-width="2.5"/>
+                <text x="460" y="606" class="route-num">③</text>
+                <circle cx="720" cy="350" r="15" fill="#8a1414" stroke="#f0e3c4" stroke-width="2.5"/>
+                <text x="720" y="356" class="route-num">④</text>
+              </g>
+
+              <g class="map-point" data-name="太平古镇" data-desc="太平古镇：国家AAAA级旅游景区，被誉为“没有围墙的红色博物馆”｜渡河兵力 1.2万人｜架设浮桥 3座｜1935年2月" data-score="1" role="button" aria-label="查看太平古镇详情">
+                <use href="#ferryStar" x="450" y="215" width="36" height="36"/>
+                <text x="450" y="270" class="place-label">太平渡</text>
+              </g>
+              <g class="map-point" data-name="二郎滩渡口" data-desc="二郎滩渡口：红军在此进行著名的二郎滩背水战和开仓分盐｜不足一个团击溃两个团｜1935年2月" data-score="1" role="button" aria-label="查看二郎滩渡口详情">
+                <use href="#ferryStar" x="540" y="440" width="34" height="34"/>
+                <text x="540" y="492" class="place-label">二郎滩</text>
+              </g>
+              <g class="map-point" data-name="双沙总司令部旧址" data-desc="双沙总司令部旧址：红军在此设立总司令部｜驻扎 7天｜指挥四渡赤水｜留下大量标语文献" data-score="1" role="button" aria-label="查看双沙总司令部旧址详情">
+                <use href="#ferryStar" x="400" y="290" width="34" height="34"/>
+                <text x="400" y="342" class="place-label">双沙总司令部</text>
+              </g>
+              <g class="map-point" data-name="观文千鸟湖" data-desc="观文千鸟湖：古蔺新兴网红打卡地｜玻璃观景台｜万只候鸟越冬｜农文旅融合典范" data-score="1" role="button" aria-label="查看观文千鸟湖详情">
+                <use href="#ferryStar" x="300" y="500" width="32" height="32"/>
+                <text x="300" y="550" class="place-label">观文千鸟湖</text>
+              </g>
+              <g class="map-point" data-name="白沙场镇" data-desc="白沙场镇：菜花文化旅游季连续16届｜累计游客超30万人次｜火锅搬进花田｜农旅融合" data-score="1" role="button" aria-label="查看白沙场镇详情">
+                <use href="#ferryStar" x="230" y="430" width="32" height="32"/>
+                <text x="230" y="480" class="place-label">白沙场镇</text>
+              </g>
+              <g class="map-point" data-name="岩桑沟兴桥" data-desc="岩桑沟兴桥：中央红军长征入川第一桥｜1935年1月｜打响入川第一枪" data-score="1" role="button" aria-label="查看岩桑沟兴桥详情">
+                <use href="#ferryStar" x="105" y="455" width="28" height="28"/>
+                <text x="105" y="498" class="place-label small">岩桑沟</text>
+              </g>
+
+              <g class="compass-rose" transform="translate(900, 110)">
+                <circle r="36" fill="rgba(240,227,196,0.5)" stroke="#5a3a1a" stroke-width="1"/>
+                <circle r="30" fill="none" stroke="#5a3a1a" stroke-width="0.5" stroke-dasharray="2 3"/>
+                <path d="M 0 -28 L 6 0 L 0 28 L -6 0 Z" fill="#8a1414"/>
+                <path d="M 0 -28 L 6 0 L 0 0 Z" fill="#5a0808"/>
+                <path d="M 0 28 L 6 0 L 0 0 Z" fill="#f0e3c4" opacity="0.7"/>
+                <text y="-38" class="compass-letter">N</text>
+                <text x="42" y="5" class="compass-letter small">E</text>
+                <text y="48" class="compass-letter small">S</text>
+                <text x="-46" y="5" class="compass-letter small">W</text>
+              </g>
+
+              <g class="scale-bar" transform="translate(120, 670)">
+                <rect x="0" y="0" width="50" height="9" fill="#3a2510"/>
+                <rect x="50" y="0" width="50" height="9" fill="#f0e3c4" stroke="#3a2510" stroke-width="0.8"/>
+                <rect x="100" y="0" width="50" height="9" fill="#3a2510"/>
+                <text x="0" y="26" class="scale-text">0</text>
+                <text x="95" y="26" class="scale-text">5</text>
+                <text x="195" y="26" class="scale-text">10 km</text>
+              </g>
+
+              <g class="map-legend-box" transform="translate(760, 590)">
+                <rect x="0" y="0" width="210" height="98" fill="rgba(240,227,196,0.85)" stroke="#5a3a1a" stroke-width="1.2"/>
+                <rect x="3" y="3" width="204" height="92" fill="none" stroke="rgba(90,58,26,0.3)" stroke-width="0.5"/>
+                <text x="12" y="20" class="legend-title">图 例 LEGEND</text>
+                <line x1="12" y1="36" x2="46" y2="36" stroke="#8a1414" stroke-width="2.5" stroke-dasharray="7 4"/>
+                <text x="54" y="40" class="legend-text">红军行军路线</text>
+                <use href="#ferryStar" x="12" y="48" width="20" height="20"/>
+                <text x="40" y="63" class="legend-text">主要渡口 / 地标</text>
+                <line x1="12" y1="78" x2="46" y2="78" stroke="#5a7a94" stroke-width="3"/>
+                <text x="54" y="82" class="legend-text">赤水河主河道</text>
+                <circle cx="22" cy="90" r="2.5" fill="#4a2e12"/>
+                <text x="40" y="93" class="legend-text">村落</text>
+              </g>
+
+              <rect x="0" y="238" width="1000" height="10" fill="url(#foldH)" opacity="0.7"/>
+              <rect x="0" y="478" width="1000" height="10" fill="url(#foldH)" opacity="0.6"/>
+              <rect x="492" y="0" width="12" height="720" fill="url(#foldV)" opacity="0.5"/>
+
+              <g class="water-stains" opacity="0.55">
+                <ellipse cx="180" cy="180" rx="75" ry="50" fill="url(#stainColor)" filter="url(#waterStain)"/>
+                <ellipse cx="820" cy="450" rx="85" ry="55" fill="url(#stainColor)" filter="url(#waterStain)"/>
+                <ellipse cx="350" cy="650" rx="65" ry="40" fill="url(#stainColor)" filter="url(#waterStain)"/>
+                <ellipse cx="700" cy="130" rx="55" ry="38" fill="url(#stainColor)" filter="url(#waterStain)"/>
+                <ellipse cx="250" cy="550" rx="50" ry="35" fill="url(#stainColor)" filter="url(#waterStain)"/>
+              </g>
+
+              <g class="worm-holes" fill="url(#agedPaper)" opacity="0.95">
+                <circle cx="22" cy="35" r="8"/><circle cx="38" cy="48" r="5"/><circle cx="15" cy="62" r="6"/>
+                <circle cx="975" cy="28" r="7"/><circle cx="962" cy="42" r="4"/>
+                <circle cx="982" cy="685" r="9"/><circle cx="968" cy="698" r="5"/>
+                <circle cx="18" cy="695" r="7"/><circle cx="32" cy="682" r="4"/>
+                <circle cx="500" cy="8" r="5"/><circle cx="620" cy="712" r="6"/>
+              </g>
+
+              <rect width="1000" height="720" fill="url(#edgeBurn)" pointer-events="none"/>
+            </svg>
+          </div>
+          <div class="map-footer">
+            <span>★ 点击渡口查看详细史料</span>
+            <span>根据《中国工农红军第一方面军长征史》绘制</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="score-panel reveal">
+        <div class="score-label">我的红色积分</div>
+        <div class="score-value" id="scoreDisplay">0</div>
+        <div class="score-hint">点亮地标 · 了解历史 · 积攒积分（上限5分）</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       云认养
+  ============================================================ -->
+  <section class="section-adopt" id="adopt">
+    <div class="section-inner">
+      <span class="section-label reveal">数字服务 · 助农闭环</span>
+      <h2 class="section-title reveal">
+        云认养一棵<span class="highlight">古蔺甜橙树</span>
+      </h2>
+      <p class="section-intro reveal">
+        用你的红色积分，认养一棵赤水河畔的甜橙树。
+        见证它从开花到结果，收获一份来自古蔺的甜蜜。
+      </p>
+
+      <div class="adopt-container reveal">
+        <div class="tree-visual">
+          <svg class="tree-svg" viewBox="0 0 200 220" fill="none">
+            <rect x="95" y="160" width="10" height="50" fill="#8B5A2B"/>
+            <ellipse cx="100" cy="130" rx="70" ry="55" fill="rgba(80,160,80,0.3)" stroke="#5a9a5a" stroke-width="2"/>
+            <circle cx="75" cy="115" r="10" fill="rgba(255,200,80,0.8)"/>
+            <circle cx="110" cy="105" r="10" fill="rgba(255,200,80,0.8)"/>
+            <circle cx="95" cy="140" r="10" fill="rgba(255,200,80,0.8)"/>
+            <circle cx="130" cy="130" r="10" fill="rgba(255,200,80,0.8)"/>
+            <circle cx="70" cy="145" r="10" fill="rgba(255,200,80,0.8)"/>
+          </svg>
+          <div class="tree-progress">
+            <div class="progress-label">生长进度</div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="treeProgress" style="width: 0%"></div>
+            </div>
+            <div class="progress-text" id="treeProgressText">尚未认养</div>
+          </div>
+        </div>
+
+        <div class="adopt-panel">
+          <div class="adopt-status" id="adoptStatus">
+            <div class="adopt-icon">🌱</div>
+            <div class="adopt-title">等待认养</div>
+            <div class="adopt-desc">消耗 5 红色积分，即可认养一棵甜橙树</div>
+          </div>
+          <button class="btn-adopt" id="btnAdopt" disabled aria-label="认养甜橙树">积分不足，先去点亮地标</button>
+        </div>
+      </div>
+
+      <div class="adopt-benefits reveal">
+        <div class="benefit-item">
+          <div class="benefit-icon">🍊</div>
+          <div class="benefit-text">收获季获得5斤古蔺甜橙</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">📸</div>
+          <div class="benefit-text">每月收到果树生长照片</div>
+        </div>
+        <div class="benefit-item">
+          <div class="benefit-icon">🎁</div>
+          <div class="benefit-text">专属认养证书与编号</div>
+        </div>
+      </div>
+
+      <div class="growth-timeline reveal">
+        <h3 class="growth-title">🍊 甜橙生长日记</h3>
+        <div class="growth-steps">
+          <div class="growth-step">
+            <div class="growth-dot"></div>
+            <div class="growth-month">3月</div>
+            <div class="growth-label">开花</div>
+            <div class="growth-desc">白色小花挂满枝头</div>
+          </div>
+          <div class="growth-step">
+            <div class="growth-dot"></div>
+            <div class="growth-month">6月</div>
+            <div class="growth-label">结果</div>
+            <div class="growth-desc">青涩小果开始膨大</div>
+          </div>
+          <div class="growth-step">
+            <div class="growth-dot"></div>
+            <div class="growth-month">9月</div>
+            <div class="growth-label">转色</div>
+            <div class="growth-desc">果皮由青转黄</div>
+          </div>
+          <div class="growth-step active">
+            <div class="growth-dot"></div>
+            <div class="growth-month">11月</div>
+            <div class="growth-label">成熟</div>
+            <div class="growth-desc">采摘寄送到家</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+ <!-- 3D 展厅入口 -->
+<section class="section-3d" id="section3d">
+  <div class="section-inner">
+    <span class="section-label reveal">沉浸体验 · 数字展厅</span>
+    <h2 class="section-title reveal">走进<span class="highlight">3D 红色记忆展厅</span></h2>
+    <p class="section-intro reveal">
+      一个可以自由探索的虚拟空间。旋转、缩放、点击，触碰历史的温度。
+    </p>
+    <a href="exhibit.html" class="btn-3d reveal reveal-delay-1" id="btnEnter3D">
+      <span>进入 3D 展厅</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+
+
+  <!-- ============================================================
+       尾声
+  ============================================================ -->
+  <section class="section-finale" id="finale">
+    <div class="section-inner">
+      <h2 class="finale-title reveal">生成我的古蔺红色记忆</h2>
+      <p class="finale-desc reveal reveal-delay-1">
+        带着你点亮的红色足迹，生成一张专属纪念海报。
+        让红色基因，在数字时代继续传承。
+      </p>
+
+      <button class="btn-generate reveal reveal-delay-2" id="btnGenerate" aria-label="生成我的古蔺红色记忆海报">
+        生成专属海报
+      </button>
+
+      <div class="poster-preview" id="posterPreview">
+        <div class="poster-card" id="posterCard">
+          <div class="poster-icon">🚩</div>
+          <div class="poster-name">重走长征路 · 古蔺</div>
+          <div class="poster-role">四渡赤水 · 红色传承人</div>
+          <div class="poster-stats">
+            <div class="stat-item">
+              <div class="stat-value" id="posterScore">0</div>
+              <div class="stat-label">红色积分</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="posterSites">0</div>
+              <div class="stat-label">点亮地标</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value" id="posterAdopt">否</div>
+              <div class="stat-label">认养果树</div>
+            </div>
+          </div>
+          <div class="poster-quote">
+            “战士双脚走天下，四渡赤水出奇兵。”
+          </div>
+        </div>
+        <button class="btn-download" id="btnDownload" aria-label="保存海报到本地">保存海报</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       关于本项目
+  ============================================================ -->
+  <!-- <section class="section-about" id="about">
+    <div class="section-inner">
+      <span class="section-label reveal">设计过程 · 作品说明</span>
+      <h2 class="section-title reveal">关于<span class="highlight">本项目</span></h2>
+      <p class="section-intro reveal">
+        本作品为“四川省大学生农业创意设计大赛·数字乡村服务设计赛道”参赛作品，
+        主题为“红韵乡创”，以泸州古蔺为原型，探索红色文化数字化传播与乡村服务设计的融合路径。
+      </p>
+
+      <div class="about-grid">
+        <div class="about-card reveal">
+          <h3 class="about-card-title">👥 用户画像</h3>
+          <div class="persona">
+            <strong>返乡青年 · 小李（24岁）</strong>
+            <p>在外读书工作多年，希望了解家乡红色文化，并寻找参与乡村振兴的切入点。</p>
+          </div>
+          <div class="persona">
+            <strong>研学学生 · 小王（19岁）</strong>
+            <p>参加红色研学旅行，希望通过互动方式深入了解四渡赤水历史，而非被动听讲解。</p>
+          </div>
+          <div class="persona">
+            <strong>外地游客 · 张阿姨（52岁）</strong>
+            <p>对红色旅游感兴趣，希望在游览之余购买正宗古蔺特产，支持当地农户。</p>
+          </div>
+        </div>
+
+        <div class="about-card reveal reveal-delay-1">
+          <h3 class="about-card-title">🗂 信息架构</h3>
+          <div class="ia-tree">
+            <div class="ia-node">序章 · 重走长征路</div>
+            <div class="ia-children">
+              <div class="ia-node">第一篇章 · 红色长征</div>
+              <div class="ia-node">时空转场 · 1935→2026</div>
+              <div class="ia-node">第二篇章 · 今日古蔺</div>
+              <div class="ia-node">数字互动 · 点亮地图</div>
+              <div class="ia-node">云认养 · 助农闭环</div>
+              <div class="ia-node">尾声 · 海报生成</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="about-card reveal reveal-delay-2">
+          <h3 class="about-card-title">🔄 核心交互流程</h3>
+          <div class="flow-steps">
+            <div class="flow-step"><span>1</span>进入网页，了解长征历史</div>
+            <div class="flow-step"><span>2</span>点击地标，了解渡口故事获积分</div>
+            <div class="flow-step"><span>3</span>消耗积分，认养一棵甜橙树</div>
+            <div class="flow-step"><span>4</span>生成专属海报，分享传播</div>
+          </div>
+        </div>
+
+        <div class="about-card reveal reveal-delay-3">
+          <h3 class="about-card-title">💡 设计决策说明</h3>
+          <ul class="decision-list">
+            <li><strong>叙事结构</strong>：先历史后当代，用“1935→2026”的时空转场串联两大篇章。</li>
+            <li><strong>视觉语言</strong>：第一篇章用红金暗调，第二篇章用墨绿暖色，形成情感对比。</li>
+            <li><strong>服务闭环</strong>：以“积分”串联“了解历史→点亮地标→认养果树→生成海报”。</li>
+            <li><strong>技术选型</strong>：纯前端实现，SVG绘制博物馆级地图，可公开访问。</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="about-footer reveal">
+        技术支持：HTML5 · CSS3 · JavaScript · SVG · LocalStorage · Web Audio
+      </p>
+    </div>
+  </section> -->
+
+
+  <!-- 留言板 -->
+  <!-- <section class="section-contact" id="contact">
+    <div class="section-inner">
+      <span class="section-label reveal">反馈 · 留言</span>
+      <h2 class="section-title reveal">给作者<span class="highlight">留言</span></h2>
+      <p class="section-intro reveal">
+        如果你对“重走长征路 · 古蔺”这个作品有任何建议、想法或鼓励，欢迎留下你的留言。
+      </p> -->
+
+      <!-- 留言表单 -->
+      <!-- <form id="contact-form" class="contact-form reveal">
+        <div class="form-row">
+          <label for="contact-name">昵称</label>
+          <input type="text" id="contact-name" name="name" placeholder="你的昵称（可选）" maxlength="20">
+        </div>
+        <div class="form-row">
+          <label for="contact-message">留言内容 <span class="required">*</span></label>
+          <textarea id="contact-message" name="message" rows="4" placeholder="写下你想说的话..." maxlength="500" required></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="btnSubmit">发送留言</button>
+        <div class="form-status" id="formStatus"></div>
+      </form> -->
+
+      <!-- 留言列表 -->
+      <!-- <div class="message-list-wrap reveal">
+        <h3 class="message-list-title">
+          <span>💬 大家的留言</span>
+          <span class="message-count" id="messageCount">0 条</span>
+        </h3>
+        <div class="message-list" id="messageList"> -->
+          <!-- JS 动态生成 -->
+        <!-- </div>
+      </div>
+    </div>
+  </section> -->
+
+
+<section class="section-contact" id="contact">
+  <div class="section-inner">
+    <span class="section-label reveal">反馈 · 留言</span>
+    <h2 class="section-title reveal">给作者<span class="highlight">留言</span></h2>
+    <p class="section-intro reveal">
+      如果你对“重走长征路 · 古蔺”这个作品有任何建议、想法或鼓励，欢迎留下你的留言。
+    </p>
+    <div id="waline"></div>
+  </div>
+</section>
+
+  
+
+  <!-- 弹窗 -->
+  <div class="overlay" id="overlay"></div>
+  <div class="info-popup" id="infoPopup">
+    <span class="popup-close" id="popupClose" aria-label="关闭">✕</span>
+    <h3 class="popup-title" id="popupTitle"></h3>
+    <div class="popup-text" id="popupText"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="./js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>详情 | 重走长征路 · 古蔺</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <!-- Three.js（3D 模型查看器） -->
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
+</head>
+
+<!-- ========== 背景音乐（共用主页 BGM） ========== -->
+<audio id="bgMusic" loop preload="auto">
+  <source src="audio/bgm.mp3" type="audio/mpeg">
+</audio>
+<button id="musicToggle" aria-label="背景音乐">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 18V5l12-2v13"/>
+    <circle cx="6" cy="18" r="3"/>
+    <circle cx="18" cy="16" r="3"/>
+  </svg>
+</button>
+
+<style>
+  #musicToggle {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(212, 168, 67, 0.5);
+    background: rgba(10, 4, 4, 0.75);
+    backdrop-filter: blur(10px);
+    color: #f5d78e;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+  #musicToggle svg { width: 20px; height: 20px; pointer-events: none; }
+  #musicToggle:hover {
+    background: rgba(160, 24, 24, 0.7);
+    border-color: #f5d78e;
+    transform: scale(1.08);
+  }
+  #musicToggle.playing svg { animation: musicSpin 4s linear infinite; }
+  @keyframes musicSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  #musicToggle.muted {
+    color: rgba(245, 215, 142, 0.35);
+    border-color: rgba(212, 168, 67, 0.2);
+  }
+  #musicToggle.muted svg { animation: none; }
+  @media (max-width: 768px) {
+    #musicToggle { bottom: 20px; right: 16px; width: 40px; height: 40px; }
+    #musicToggle svg { width: 16px; height: 16px; }
+  }
+</style>
+
+<script>
+  (function () {
+    const bgm = document.getElementById('bgMusic');
+    const btn = document.getElementById('musicToggle');
+    if (!bgm || !btn) return;
+
+    const VOLUME = 0.3;
+
+    // 从 sessionStorage 恢复播放位置
+    const savedTime = parseFloat(sessionStorage.getItem('bgm_time') || '0');
+    const wasPlaying = sessionStorage.getItem('bgm_playing') === 'true';
+
+    function playMusic() {
+      bgm.volume = VOLUME;
+      bgm.play().then(() => {
+        btn.classList.add('playing');
+        btn.classList.remove('muted');
+      }).catch(() => {});
+    }
+
+    function pauseMusic() {
+      bgm.pause();
+      btn.classList.remove('playing');
+      btn.classList.add('muted');
+    }
+
+    // 页面加载时，如果有保存的位置，先跳过去
+    if (savedTime > 0) {
+      bgm.addEventListener('loadedmetadata', function () {
+        if (bgm.duration && savedTime < bgm.duration) {
+          bgm.currentTime = savedTime;
+        }
+      }, { once: true });
+    }
+
+    // 如果之前是播放状态，等首次交互后恢复播放
+    if (wasPlaying) {
+      let started = false;
+      ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(evt => {
+        document.addEventListener(evt, () => {
+          if (started) return;
+          started = true;
+          playMusic();
+        }, { passive: true });
+      });
+    } else {
+      // 之前是暂停状态，等用户主动点按钮才播放
+      let started = false;
+      ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(evt => {
+        document.addEventListener(evt, () => {
+          if (started) return;
+          started = true;
+          // 不自动播放，只更新按钮状态
+          btn.classList.add('muted');
+        }, { passive: true });
+      });
+    }
+
+    // 按钮切换
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (bgm.paused) playMusic();
+      else pauseMusic();
+    });
+
+    // 离开页面时保存状态
+    window.addEventListener('beforeunload', function () {
+      sessionStorage.setItem('bgm_time', bgm.currentTime);
+      sessionStorage.setItem('bgm_playing', !bgm.paused);
+    });
+
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        sessionStorage.setItem('bgm_time', bgm.currentTime);
+        sessionStorage.setItem('bgm_playing', !bgm.paused);
+      }
+    });
+
+    // 初始化按钮状态
+    if (bgm.paused) btn.classList.add('muted');
+    else btn.classList.add('playing');
+  })();
+</script>
+
+
+<body class="detail-page">
+
+  <audio id="bgMusic" loop preload="auto">
+    <source src="audio/bgm.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="detail-loading" id="detailLoading">
+    <div class="loader-star">★</div>
+  </div>
+
+  <div class="detail-wrap" id="detailWrap" style="display:none;">
+
+    <!-- 顶部返回 -->
+    <header class="detail-header">
+      <a href="index.html" class="detail-back">← 返回主页</a>
+      <div class="detail-category" id="detailCategory"></div>
+    </header>
+
+    <!-- 主图 -->
+    <!-- 主图轮播 -->
+    <section class="detail-hero">
+      <div class="carousel" id="detailCarousel">
+        <div class="carousel-track" id="carouselTrack">
+          <!-- JS 动态生成 -->
+        </div>
+
+        <!-- 左右箭头 -->
+        <button class="carousel-arrow prev" id="carouselPrev" aria-label="上一张">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button class="carousel-arrow next" id="carouselNext" aria-label="下一张">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <!-- 圆点指示器 -->
+        <div class="carousel-dots" id="carouselDots"></div>
+
+        <!-- 底部渐变遮罩 + 标题 -->
+        <div class="detail-hero-overlay"></div>
+        <div class="detail-hero-text">
+          <h1 id="detailTitle"></h1>
+          <p id="detailSubtitle"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 正文 -->
+    <section class="detail-body">
+      <p class="detail-intro" id="detailIntro"></p>
+      <div class="detail-content" id="detailContent"></div>
+      <div class="detail-stats" id="detailStats"></div>
+    </section>
+
+    <!-- 底部返回 -->
+    <section class="detail-footer">
+      <a href="index.html" class="back-home-btn">返回主页 · 继续探索</a>
+    </section>
+
+  </div>
+
+  <!-- 图片灯箱 -->
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-overlay"></div>
+
+    <!-- 关闭按钮 -->
+    <button class="lightbox-close" id="lightboxClose" aria-label="关闭">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <!-- 上一张 -->
+    <button class="lightbox-arrow lightbox-prev" id="lightboxPrev" aria-label="上一张">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+
+    <!-- 下一张 -->
+    <button class="lightbox-arrow lightbox-next" id="lightboxNext" aria-label="下一张">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+
+    <!-- 图片 -->
+    <div class="lightbox-image-wrap">
+      <img id="lightboxImage" src="" alt="">
+    </div>
+
+    <!-- 计数 -->
+    <div class="lightbox-counter" id="lightboxCounter">1 / 3</div>
+  </div>
+
+  <script src="./js/detail.js"></script>
+</body>
+</html>

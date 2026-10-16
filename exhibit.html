@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>3D 红色记忆展厅 | 重走长征路 · 古蔺</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #0a0202;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+      color: #fff;
+      touch-action: none;
+    }
+
+    /* 开场动画 */
+    .exhibit-intro {
+      position: fixed; inset: 0;
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+      background: #050101;
+      transition: opacity 1.2s ease, visibility 1.2s ease;
+    }
+    .exhibit-intro.hide { opacity: 0; visibility: hidden; }
+
+    .exhibit-intro::before {
+      content: '';
+      position: absolute;
+      width: 80vw; height: 80vh;
+      background: radial-gradient(circle at center,
+        rgba(212, 168, 67, 0.12) 0%,
+        rgba(160, 24, 24, 0.08) 30%,
+        transparent 60%);
+      animation: introGlow 3s ease-in-out infinite alternate;
+    }
+    @keyframes introGlow {
+      from { transform: scale(1); opacity: 0.6; }
+      to { transform: scale(1.2); opacity: 1; }
+    }
+
+    .intro-scroll {
+      position: relative;
+      width: 0;
+      height: 40vh;
+      background: linear-gradient(180deg,
+        rgba(240, 227, 196, 0.05) 0%,
+        rgba(212, 168, 67, 0.15) 50%,
+        rgba(240, 227, 196, 0.05) 100%);
+      border-top: 2px solid rgba(212, 168, 67, 0.7);
+      border-bottom: 2px solid rgba(212, 168, 67, 0.7);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      animation: scrollUnfold 2s cubic-bezier(0.34, 1.2, 0.64, 1) 0.4s forwards;
+    }
+    @keyframes scrollUnfold {
+      0% { width: 0; opacity: 0; }
+      30% { opacity: 1; }
+      100% { width: 70vw; }
+    }
+
+    .intro-scroll::before,
+    .intro-scroll::after {
+      content: '';
+      position: absolute;
+      top: -6px; bottom: -6px;
+      width: 10px;
+      background: linear-gradient(180deg, #d4a843, #8a6a2a);
+      border-radius: 6px;
+      box-shadow: 0 0 20px rgba(212, 168, 67, 0.8);
+      opacity: 0;
+      animation: scrollCaps 1s ease 2.2s forwards;
+    }
+    .intro-scroll::before { left: -5px; }
+    .intro-scroll::after { right: -5px; }
+    @keyframes scrollCaps { to { opacity: 1; } }
+
+    .intro-scroll-inner {
+      text-align: center;
+      white-space: nowrap;
+      opacity: 0;
+      animation: introText 1.5s ease 2s forwards;
+    }
+    @keyframes introText {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .intro-title {
+      font-family: 'STKaiti', 'KaiTi', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      letter-spacing: 0.4em;
+      color: #f5d78e;
+      text-shadow:
+        0 0 20px rgba(212, 168, 67, 0.6),
+        0 0 40px rgba(160, 24, 24, 0.5);
+      margin-bottom: 20px;
+      padding-left: 0.4em;
+    }
+    .intro-subtitle {
+      font-family: 'STKaiti', 'KaiTi', serif;
+      font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+      letter-spacing: 0.6em;
+      color: rgba(245, 215, 142, 0.7);
+      padding-left: 0.6em;
+    }
+
+    /* 3D 场景 */
+    .exhibit-scene {
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at center, #1a0a0a 0%, #0a0202 100%);
+    }
+    #canvas3d { display: block; width: 100%; height: 100%; touch-action: none; }
+
+    /* 顶部标题栏 */
+    .exhibit-header {
+      position: absolute; top: 0; left: 0; right: 0;
+      padding: 24px 32px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+      z-index: 10; pointer-events: none;
+      opacity: 0;
+      transition: opacity 1s ease 0.5s;
+    }
+    .exhibit-header.show { opacity: 1; }
+
+    .exhibit-title {
+      font-size: 1.1rem; font-weight: 700; color: #f5d78e;
+      letter-spacing: 0.2em;
+      font-family: 'STKaiti', 'KaiTi', serif;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    }
+    .exhibit-close {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid rgba(212, 168, 67, 0.5);
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      color: #f5d78e; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease;
+      pointer-events: auto; text-decoration: none;
+    }
+    .exhibit-close:hover {
+      background: rgba(160, 24, 24, 0.7);
+      border-color: #f5d78e;
+      transform: rotate(90deg);
+    }
+    .exhibit-close svg { width: 20px; height: 20px; }
+
+    /* 展馆导航栏 */
+    .exhibit-nav {
+      position: absolute; top: 76px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 8px; padding: 6px;
+      background: rgba(10, 4, 4, 0.65);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(212, 168, 67, 0.35);
+      border-radius: 50px; z-index: 20;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      transition: opacity 1s ease 0.7s;
+    }
+    .exhibit-nav.show { opacity: 1; }
+
+    .exhibit-nav-btn {
+      padding: 9px 22px;
+      background: transparent;
+      color: rgba(245, 215, 142, 0.75);
+      border: none; border-radius: 40px;
+      font-size: 0.85rem;
+      font-family: 'STKaiti', 'KaiTi', serif;
+      letter-spacing: 0.12em;
+      cursor: pointer; transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+    .exhibit-nav-btn:hover {
+      color: #f5d78e; background: rgba(212, 168, 67, 0.12);
+    }
+    .exhibit-nav-btn.active {
+      background: linear-gradient(135deg, #d4a843, #b8860b);
+      color: #1a0a0a; font-weight: 700;
+      box-shadow: 0 4px 16px rgba(212, 168, 67, 0.5);
+    }
+
+    /* 底部提示 */
+    .exhibit-hint {
+      position: absolute; bottom: 30px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 24px;
+      padding: 12px 28px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(212, 168, 67, 0.3);
+      border-radius: 30px;
+      font-size: 0.78rem;
+      color: rgba(245, 215, 142, 0.85);
+      letter-spacing: 0.1em;
+      font-family: 'STKaiti', 'KaiTi', serif;
+      z-index: 10; pointer-events: none;
+      opacity: 0;
+      transition: opacity 1s ease 0.9s;
+    }
+    .exhibit-hint.show { opacity: 1; }
+    .exhibit-hint span { white-space: nowrap; }
+
+    /* 弹窗 */
+    .exhibit-info-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 9998;
+    }
+    .exhibit-info-overlay.show {
+      opacity: 1; pointer-events: auto;
+    }
+
+    .exhibit-info {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      max-width: 360px; width: 82%; height: auto;
+      padding: 18px 22px;
+      background: linear-gradient(145deg, rgba(42, 24, 8, 0.96), rgba(26, 10, 10, 0.96));
+      border: 1px solid rgba(212, 168, 67, 0.6);
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      opacity: 0; pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 9999; text-align: center;
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+    }
+    .exhibit-info.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+    .exhibit-info-title {
+      font-size: 1rem; font-weight: 700;
+      color: #f5d78e; margin-bottom: 8px;
+      letter-spacing: 0.1em;
+      font-family: 'STKaiti', 'KaiTi', serif;
+    }
+    .exhibit-info-desc {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.7;
+    }
+
+    /* 音乐按钮 */
+    #musicToggle {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 9999;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid rgba(212, 168, 67, 0.5);
+      background: rgba(10, 4, 4, 0.75);
+      backdrop-filter: blur(10px);
+      color: #f5d78e;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    #musicToggle svg { width: 20px; height: 20px; pointer-events: none; }
+    #musicToggle:hover {
+      background: rgba(160, 24, 24, 0.7);
+      border-color: #f5d78e;
+      transform: scale(1.08);
+    }
+    #musicToggle.playing svg { animation: musicSpin 4s linear infinite; }
+    @keyframes musicSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    #musicToggle.muted {
+      color: rgba(245, 215, 142, 0.35);
+      border-color: rgba(212, 168, 67, 0.2);
+    }
+    #musicToggle.muted svg { animation: none; }
+
+    /* 移动端 */
+    @media (max-width: 768px) {
+      .exhibit-header { padding: 14px 16px; }
+      .exhibit-title { font-size: 0.78rem; letter-spacing: 0.1em; }
+      .exhibit-close { width: 32px; height: 32px; }
+      .exhibit-close svg { width: 14px; height: 14px; }
+
+      .exhibit-nav { top: 54px; gap: 3px; padding: 4px; }
+      .exhibit-nav-btn { padding: 6px 11px; font-size: 0.68rem; letter-spacing: 0.02em; }
+
+      .exhibit-hint {
+        font-size: 0.6rem; padding: 7px 14px;
+        gap: 10px; bottom: 14px;
+      }
+
+      .exhibit-info {
+        width: 82%; max-width: 300px;
+        padding: 14px 18px; border-radius: 12px;
+      }
+      .exhibit-info-title { font-size: 0.85rem; margin-bottom: 6px; letter-spacing: 0.05em; }
+      .exhibit-info-desc { font-size: 0.7rem; line-height: 1.6; }
+
+      .intro-scroll { height: 30vh; }
+      @keyframes scrollUnfold {
+        0% { width: 0; opacity: 0; }
+        30% { opacity: 1; }
+        100% { width: 88vw; }
+      }
+
+      #musicToggle { bottom: 20px; right: 16px; width: 40px; height: 40px; }
+      #musicToggle svg { width: 16px; height: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 背景音乐 -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="audio/bgm.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- 开场动画 -->
+  <div class="exhibit-intro" id="exhibitIntro">
+    <div class="intro-scroll">
+      <div class="intro-scroll-inner">
+        <div class="intro-title">四渡赤水</div>
+        <div class="intro-subtitle">· 古 蔺 ·</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D 场景 -->
+  <div class="exhibit-scene">
+    <canvas id="canvas3d"></canvas>
+  </div>
+
+  <!-- 顶部标题 -->
+  <div class="exhibit-header" id="exhibitHeader">
+    <div class="exhibit-title">古蔺红色记忆 · 数字展厅</div>
+    <a href="index.html" class="exhibit-close" aria-label="返回主页">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </a>
+  </div>
+
+  <!-- 展馆导航 -->
+  <div class="exhibit-nav" id="exhibitNav">
+    <button class="exhibit-nav-btn active" data-gallery="redarmy">红军馆</button>
+    <button class="exhibit-nav-btn" data-gallery="scenery">风景文旅馆</button>
+    <button class="exhibit-nav-btn" data-gallery="food">美食馆</button>
+    <button class="exhibit-nav-btn" data-gallery="heritage">非遗馆</button>
+  </div>
+
+  <!-- 底部提示 -->
+  <div class="exhibit-hint" id="exhibitHint">
+    <span>🖱️ 拖拽旋转</span>
+    <span>🔍 滚轮缩放</span>
+    <span>👆 点击展品</span>
+  </div>
+
+  <!-- 弹窗 -->
+  <div class="exhibit-info-overlay" id="exhibitInfoOverlay"></div>
+  <div class="exhibit-info" id="exhibitInfo">
+    <div class="exhibit-info-title" id="exhibitInfoTitle"></div>
+    <div class="exhibit-info-desc" id="exhibitInfoDesc"></div>
+  </div>
+
+  <!-- 音乐按钮 -->
+  <button id="musicToggle" aria-label="背景音乐">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/>
+      <circle cx="18" cy="16" r="3"/>
+    </svg>
+  </button>
+
+  <script>
+    (function () {
+      const bgm = document.getElementById('bgMusic');
+      const btn = document.getElementById('musicToggle');
+      if (!bgm || !btn) return;
+
+      const VOLUME = 0.3;
+      const savedTime = parseFloat(sessionStorage.getItem('bgm_time') || '0');
+      const wasPlaying = sessionStorage.getItem('bgm_playing') === 'true';
+
+      function playMusic() {
+        bgm.volume = VOLUME;
+        bgm.play().then(() => {
+          btn.classList.add('playing');
+          btn.classList.remove('muted');
+        }).catch(() => {});
+      }
+
+      function pauseMusic() {
+        bgm.pause();
+        btn.classList.remove('playing');
+        btn.classList.add('muted');
+      }
+
+      if (savedTime > 0) {
+        bgm.addEventListener('loadedmetadata', function () {
+          if (bgm.duration && savedTime < bgm.duration) {
+            bgm.currentTime = savedTime;
+          }
+        }, { once: true });
+      }
+
+      if (wasPlaying) {
+        let started = false;
+        ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(evt => {
+          document.addEventListener(evt, () => {
+            if (started) return;
+            started = true;
+            playMusic();
+          }, { passive: true, once: true });
+        });
+      } else {
+        btn.classList.add('muted');
+      }
+
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (bgm.paused) playMusic();
+        else pauseMusic();
+      });
+
+      window.addEventListener('beforeunload', function () {
+        sessionStorage.setItem('bgm_time', bgm.currentTime);
+        sessionStorage.setItem('bgm_playing', !bgm.paused);
+      });
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+          sessionStorage.setItem('bgm_time', bgm.currentTime);
+          sessionStorage.setItem('bgm_playing', !bgm.paused);
+        }
+      });
+
+      if (bgm.paused) btn.classList.add('muted');
+      else btn.classList.add('playing');
+    })();
+  </script>
+
+  <!-- Three.js + 两个加载器 -->
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/PLYLoader.js"></script>
+
+  <script src="./js/exhibit.js?v=4"></script>
+</body>
+</html>
