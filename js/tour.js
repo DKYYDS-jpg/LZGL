@@ -81,6 +81,26 @@
   const hintEl = document.getElementById('tourHint');
   const panoEl = document.getElementById('tourPano');
   const panoBadge = document.getElementById('panoBadge');
+  const panoShield = document.getElementById('panoShield');
+  const shieldDate = document.getElementById('shieldDate');
+  const shieldNote = document.getElementById('shieldNote');
+
+  /* 返回遮罩里的"云游小卡"内容：日期 + 星期/节气 + 一句应景短语，
+        每天 0 点自动更新。短语按月份给一点季节感，不突兀 */
+  const SHIELD_NOTES = {
+    1: '新年快乐 · 古蔺迎客', 2: '新春踏春 · 古镇年味', 3: '春暖花开 · 踏青正当时',
+    4: '人间四月 · 杜鹃漫山', 5: '五一好去处 · 红色之旅', 6: '仲夏将至 · 林间避暑',
+    7: '盛夏清凉 · 老林避暑', 8: '避暑胜地 · 25℃的夏天', 9: '秋高气爽 · 丹桂飘香',
+    10: '金秋十月 · 层林尽染', 11: '深秋韵味 · 红叶正浓', 12: '冬日暖阳 · 静候候鸟'
+  };
+  const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
+  function renderShieldCard() {
+    if (!shieldDate) return;
+    const d = new Date();
+    shieldDate.textContent = `${d.getMonth() + 1}月${d.getDate()}日 · 周${WEEK[d.getDay()]}`;
+    shieldNote.textContent = (SHIELD_NOTES[d.getMonth() + 1] || '云游古蔺') + ' ☀';
+  }
+  renderShieldCard();
   const veilFallback = document.getElementById('veilFallback');
   const spotsToggle = document.getElementById('tourSpotsToggle');
 
@@ -230,6 +250,8 @@
     }, 15000);
     panoEl.classList.add('on');
     panoBadge.classList.add('on');
+    /* 千鸟湖 H5 左上角没有返回按钮，不需要遮罩；太平/黄荆官网街景才启用 */
+    if (spot.name !== '观文千鸟湖') panoShield.classList.add('on');
     /* 同一全景页不重载，切回时秒开 */
     if (panoEl.dataset.url !== spot.panoUrl) {
       panoEl.dataset.url = spot.panoUrl;
@@ -259,6 +281,7 @@
     spotsToggle.textContent = '切换景区';
     panoEl.classList.remove('on');
     panoBadge.classList.remove('on');
+    panoShield.classList.remove('on');
   }
 
   /* 全景加载失败：降级照片模式 */

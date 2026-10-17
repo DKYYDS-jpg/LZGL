@@ -77,7 +77,6 @@
 
     setTimeout(() => {
       gate.classList.add('hide');
-      document.body.classList.remove('locked');
       if (loader) loader.classList.add('show');
       setTimeout(() => {
         gate.style.display = 'none';
@@ -86,6 +85,8 @@
 
     setTimeout(() => {
       if (loader) loader.classList.add('hide');
+      /* 加载动画结束后才解锁页面滚动 */
+      document.body.classList.remove('locked');
     }, 3000);
   }
 

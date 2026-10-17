@@ -249,6 +249,40 @@
     }
     .tour-pano-badge.on { display: block; }
 
+    /* 只罩住百度全景左上角"返回"按钮本身，防止误触跳出到百度地图页面。
+       千鸟湖 H5 无此按钮，故按景点名启停。框内显示动态内容（日期/节气/心情短语），
+       看起来是一张自带的"云游小卡"，而不是一块生硬的遮挡 */
+    .pano-shield {
+      position: fixed; left: 12px; top: 10px;
+      min-width: 92px; max-width: 220px; height: 62px;
+      z-index: 30; display: none;
+      background: rgba(24, 24, 24, 0.6);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border-radius: 8px;
+      cursor: default;
+      box-sizing: border-box;
+      padding: 8px 12px;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+      user-select: none;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    }
+    .pano-shield.on { display: flex; }
+    .pano-shield .shield-date {
+      font-size: 0.72rem; font-weight: 600;
+      color: rgba(245, 215, 142, 0.95);
+      letter-spacing: 0.06em; white-space: nowrap;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+    }
+    .pano-shield .shield-note {
+      font-size: 0.58rem;
+      color: rgba(255, 255, 255, 0.72);
+      letter-spacing: 0.04em; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+
     /* 全景模式下隐藏照片模式的控件 */
     body.pano-mode .tour-arrow,
     body.pano-mode .tour-vignette,
@@ -321,6 +355,10 @@
   <iframe class="tour-pano" id="tourPano" allowfullscreen
     referrerpolicy="no-referrer-when-downgrade" title="百度地图全景"></iframe>
   <div class="tour-pano-badge" id="panoBadge">全景 · 百度地图提供</div>
+  <div class="pano-shield" id="panoShield">
+    <span class="shield-date" id="shieldDate"></span>
+    <span class="shield-note" id="shieldNote"></span>
+  </div>
   <div class="tour-vignette"></div>
   <div class="tour-veil" id="tourVeil"><span class="veil-fallback" id="veilFallback">加载较慢？点此切换到照片模式</span></div>
 
@@ -429,7 +467,7 @@
   <!-- Three.js（国内 npmmirror 镜像，避免 unpkg 被墙） -->
   <script src="https://registry.npmmirror.com/three/0.128.0/files/build/three.min.js"></script>
   <script src="./js/local-links.js"></script>
-  <script src="./js/tour.js?v=15"></script>
+  <script src="./js/tour.js?v=20"></script>
   <!-- 访问统计 + PWA 离线缓存 -->
   <script src="./js/analytics.js"></script>
   <script>
