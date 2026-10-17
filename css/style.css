@@ -3458,13 +3458,13 @@ img {
   letter-spacing: 0.05em;
 }
 
-.story-role {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.45);
-  letter-spacing: 0.1em;
-  font-family: 'STKaiti', 'KaiTi', serif;
-}
-
+.story-role {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.1em;
+  font-family: 'STKaiti', 'KaiTi', serif;
+}
+
 /* 兼容旧的 story-source（如果还留着） */
 .story-source {
   display: none;
