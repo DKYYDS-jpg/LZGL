@@ -3,7 +3,7 @@
  * 策略：HTML 网络优先（拿不到再用缓存），静态资源缓存优先
  * 更新方式：修改下方 CACHE_VERSION 即可让旧缓存整体失效
  * ============================================================ */
-const CACHE_VERSION = 'gulin-v1';
+const CACHE_VERSION = 'gulin-v3';
 
 /* 核心资源：安装时预缓存（HTML 走网络优先，这里仅作离线兜底） */
 const PRECACHE = [
@@ -12,6 +12,7 @@ const PRECACHE = [
   '/js/script.js',
   '/js/detail.js',
   '/js/exhibit.js',
+  '/js/tour.js',
   '/js/vendor/qrcode.js',
   '/audio/bgm.mp3',
   '/images/favicon-32.png',

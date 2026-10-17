@@ -16,7 +16,7 @@
   window.__localLink = function (url) {
     if (!isLocal) return url;
     if (url === '/') return 'index.html';
-    var m = url.match(/^\/(exhibit|detail|index)([?#].*)?$/);
+    var m = url.match(/^\/(exhibit|detail|index|tour)([?#].*)?$/);
     if (m) return m[1] + '.html' + (m[2] || '');
     return url;
   };

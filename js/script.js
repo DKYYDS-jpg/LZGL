@@ -904,6 +904,25 @@ document.querySelectorAll('.cloud-tag[data-id]').forEach(tag => {
   });
 })();
 
+/* ==================== 19. 云游全景入口 · 记录返回位置 ==================== */
+(function initTourEntry() {
+  const btnEnter = document.getElementById('btnEnterTour');
+  if (!btnEnter) return;
+
+  btnEnter.addEventListener('click', function () {
+    // 记录当前滚动位置，返回首页时直接落回本板块（跳过封面和加载动画）
+    sessionStorage.setItem('home_scroll', window.scrollY);
+    sessionStorage.setItem('skip_entry', 'true');
+    // 记录音乐播放位置，让全景页返回后续播
+    const bgMusic = document.getElementById('bgMusic');
+    if (bgMusic) {
+      sessionStorage.setItem('music_time', bgMusic.currentTime);
+      sessionStorage.setItem('music_playing', !bgMusic.paused);
+    }
+    // 不阻止默认跳转，继续走 href
+  });
+})();
+
 /* ==================== 17. 长征时间线（拖动浏览 + 节点详情弹窗） ==================== */
 (function initCMTimeline() {
   const box = document.getElementById('cmTimeline');

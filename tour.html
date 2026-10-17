@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>云游古蔺 · 沉浸全景漫游 | 重走长征路 · 古蔺</title>
+  <!-- 站点图标 + PWA -->
+  <link rel="icon" type="image/png" href="/images/favicon-32.png">
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: #050101;
+      font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+      color: #fff;
+    }
+
+    /* 开场 */
+    .tour-intro {
+      position: fixed; inset: 0; z-index: 600;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #050101;
+      transition: opacity 0.9s ease, visibility 0.9s ease;
+    }
+    .tour-intro.hide { opacity: 0; visibility: hidden; }
+    .tour-intro-title {
+      font-family: 'STKaiti', 'KaiTi', serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      font-weight: 900; letter-spacing: 0.4em; padding-left: 0.4em;
+      color: #f5d78e;
+      text-shadow: 0 0 20px rgba(212, 168, 67, 0.6), 0 0 40px rgba(160, 24, 24, 0.5);
+      animation: introUp 1.2s ease both;
+    }
+    .tour-intro-sub {
+      margin-top: 16px;
+      font-family: 'STKaiti', 'KaiTi', serif;
+      font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+      letter-spacing: 0.5em; padding-left: 0.5em;
+      color: rgba(245, 215, 142, 0.65);
+      animation: introUp 1.2s ease 0.2s both;
+    }
+    @keyframes introUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 全景舞台（Three.js 球体内景 canvas 挂载于此） */
+    .tour-viewport {
+      position: fixed; inset: 0;
+      overflow: hidden;
+      background: #050101;
+      cursor: grab; touch-action: none;
+      user-select: none; -webkit-user-select: none;
+    }
+    .tour-viewport:active { cursor: grabbing; }
+    .tour-viewport canvas { display: block; width: 100%; height: 100%; }
+
+    /* 压边 */
+    .tour-vignette {
+      position: fixed; inset: 0; pointer-events: none; z-index: 3;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, transparent 20%, transparent 74%, rgba(0, 0, 0, 0.6) 100%),
+        radial-gradient(ellipse at center, transparent 62%, rgba(0, 0, 0, 0.42) 100%);
+    }
+
+    /* 切换景点时的淡场 */
+    .tour-veil {
+      position: fixed; inset: 0; z-index: 500;
+      background: #050101;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.28s ease;
+    }
+    .tour-veil.on { opacity: 1; }
+
+    /* 顶部信息 */
+    .tour-top {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+      padding: 24px 32px 44px; text-align: center; pointer-events: none;
+    }
+    .tour-title {
+      font-family: 'STKaiti', 'KaiTi', serif; font-size: 1.5rem; font-weight: 700;
+      letter-spacing: 0.35em; padding-left: 0.35em; color: #f5d78e;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+    }
+    .tour-desc {
+      margin-top: 8px; font-size: 0.8rem; color: rgba(245, 215, 142, 0.9);
+      letter-spacing: 1px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+    }
+    /* 手机端引导电脑端体验（仅 body.is-mobile 时显示，由 tour.js 按 UA/触屏判定） */
+    .tour-pc-tip {
+      display: none; max-width: 88%; margin: 12px auto 0;
+      font-size: 0.7rem; line-height: 1.6; letter-spacing: 0.05em;
+      color: rgba(245, 215, 142, 0.88);
+      border: 1px solid rgba(212, 168, 67, 0.4); border-radius: 16px;
+      padding: 5px 14px; background: rgba(10, 4, 4, 0.55);
+      backdrop-filter: blur(6px);
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+    }
+    body.is-mobile .tour-pc-tip { display: inline-block; }
+    .tour-progress {
+      display: inline-block; margin-top: 10px;
+      font-size: 0.72rem; letter-spacing: 2px; color: rgba(245, 215, 142, 0.75);
+      border: 1px solid rgba(212, 168, 67, 0.4); border-radius: 20px;
+      padding: 3px 12px; background: rgba(10, 4, 4, 0.5); backdrop-filter: blur(6px);
+    }
+    .tour-close {
+      position: fixed; top: 24px; right: 32px; z-index: 20;
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid rgba(212, 168, 67, 0.5);
+      background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);
+      color: #f5d78e; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease; text-decoration: none;
+    }
+    .tour-close:hover {
+      background: rgba(160, 24, 24, 0.7);
+      border-color: #f5d78e; transform: rotate(90deg);
+    }
+    .tour-close svg { width: 20px; height: 20px; }
+
+    /* 左右箭头（按张切换） */
+    .tour-arrow {
+      position: fixed; top: 50%; transform: translateY(-50%); z-index: 10;
+      width: 46px; height: 46px; border-radius: 50%;
+      border: 1px solid rgba(212, 168, 67, 0.5);
+      background: rgba(10, 4, 4, 0.55); backdrop-filter: blur(8px);
+      color: #f5d78e; font-size: 26px; line-height: 1;
+      cursor: pointer; transition: all 0.3s ease;
+      display: flex; align-items: center; justify-content: center;
+      padding-bottom: 3px;
+    }
+    .tour-arrow:hover { background: rgba(160, 24, 24, 0.75); border-color: #f5d78e; }
+    .tour-arrow.prev { left: 24px; }
+    .tour-arrow.next { right: 24px; }
+
+    /* 拖拽提示 */
+    .tour-hint {
+      position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); z-index: 9;
+      font-family: 'STKaiti', 'KaiTi', serif;
+      font-size: 0.78rem; letter-spacing: 0.3em; padding-left: 0.3em;
+      color: rgba(245, 215, 142, 0.85);
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.9);
+      pointer-events: none;
+      animation: hintPulse 2.2s ease-in-out infinite;
+      transition: opacity 0.5s ease;
+    }
+    .tour-hint.off { opacity: 0; }
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 1; }
+    }
+
+    /* 底部栏 */
+    .tour-bar {
+      position: fixed; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: 10;
+      display: flex; gap: 8px; align-items: center; padding: 6px;
+      max-width: 94vw;
+      background: rgba(10, 4, 4, 0.65); backdrop-filter: blur(14px);
+      border: 1px solid rgba(212, 168, 67, 0.35); border-radius: 50px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .tour-spots { display: flex; gap: 8px; overflow-x: auto; max-width: 86vw; }
+    .tour-spots::-webkit-scrollbar { display: none; }
+    .tour-spot-btn {
+      padding: 9px 18px; background: transparent; border: none; border-radius: 40px;
+      color: rgba(245, 215, 142, 0.75); font-size: 0.82rem;
+      font-family: 'STKaiti', 'KaiTi', serif; letter-spacing: 0.08em;
+      cursor: pointer; transition: all 0.3s ease; white-space: nowrap;
+    }
+    .tour-spot-btn:hover { color: #f5d78e; background: rgba(212, 168, 67, 0.12); }
+    .tour-spot-btn.active {
+      background: linear-gradient(135deg, #d4a843, #b8860b);
+      color: #1a0a0a; font-weight: 700;
+      box-shadow: 0 4px 16px rgba(212, 168, 67, 0.5);
+    }
+    .tour-auto {
+      padding: 9px 16px; border-radius: 40px; flex-shrink: 0;
+      border: 1px solid rgba(212, 168, 67, 0.55); background: rgba(138, 26, 26, 0.4);
+      color: #f5d78e; font-size: 0.78rem; letter-spacing: 1px;
+      cursor: pointer; transition: all 0.3s ease; white-space: nowrap;
+      font-family: 'STKaiti', 'KaiTi', serif;
+    }
+    .tour-auto:hover { background: rgba(160, 24, 24, 0.7); }
+    .tour-auto.on {
+      background: linear-gradient(135deg, #d4a843, #b8860b);
+      color: #1a0a0a; font-weight: 700;
+    }
+
+    /* 音乐按钮 */
+    #musicToggle {
+      position: fixed; bottom: 26px; right: 26px; z-index: 30;
+      width: 46px; height: 46px; border-radius: 50%;
+      border: 1px solid rgba(212, 168, 67, 0.5);
+      background: rgba(10, 4, 4, 0.75); backdrop-filter: blur(10px);
+      color: #f5d78e; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.3s ease; outline: none;
+    }
+    #musicToggle svg { width: 20px; height: 20px; pointer-events: none; }
+    #musicToggle:hover { background: rgba(160, 24, 24, 0.7); border-color: #f5d78e; transform: scale(1.08); }
+    #musicToggle.playing svg { animation: musicSpin 4s linear infinite; }
+    @keyframes musicSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    #musicToggle.muted { color: rgba(245, 215, 142, 0.35); border-color: rgba(212, 168, 67, 0.2); }
+    #musicToggle.muted svg { animation: none; }
+
+    /* 移动端 */
+    @media (max-width: 768px) {
+      .tour-top { padding: 14px 16px 34px; }
+      .tour-title { font-size: 1.05rem; letter-spacing: 0.2em; }
+      .tour-desc { font-size: 0.68rem; }
+      .tour-pc-tip { font-size: 0.62rem; padding: 4px 12px; margin-top: 8px; line-height: 1.55; }
+      .tour-progress { font-size: 0.62rem; margin-top: 6px; }
+      .tour-close { top: 14px; right: 16px; width: 34px; height: 34px; }
+      .tour-close svg { width: 15px; height: 15px; }
+      .tour-arrow { width: 36px; height: 36px; font-size: 20px; }
+      .tour-arrow.prev { left: 10px; }
+      .tour-arrow.next { right: 10px; }
+      .tour-hint { bottom: 82px; font-size: 0.66rem; letter-spacing: 0.2em; }
+      .tour-bar { bottom: 14px; gap: 5px; padding: 4px; }
+      .tour-spots { max-width: 88vw; gap: 5px; }
+      .tour-spot-btn { padding: 6px 11px; font-size: 0.66rem; letter-spacing: 0.02em; }
+      .tour-auto { padding: 6px 11px; font-size: 0.66rem; }
+      #musicToggle { bottom: 64px; right: 14px; width: 38px; height: 38px; }
+      #musicToggle svg { width: 15px; height: 15px; }
+    }
+
+    /* 720云 VR 全景 iframe */
+    .tour-pano {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      border: 0; z-index: 2;
+      display: none;
+      background: #0a0505;
+    }
+    .tour-pano.on { display: block; }
+
+    .tour-pano-badge {
+      position: fixed; right: 14px; bottom: 86px;
+      z-index: 31; padding: 4px 10px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(212, 168, 67, 0.35);
+      border-radius: 20px;
+      font-size: 0.62rem; color: rgba(245, 215, 142, 0.7);
+      letter-spacing: 0.08em;
+      display: none; pointer-events: none;
+    }
+    .tour-pano-badge.on { display: block; }
+
+    /* 全景模式下隐藏照片模式的控件 */
+    body.pano-mode .tour-arrow,
+    body.pano-mode .tour-vignette,
+    body.pano-mode .tour-auto,
+    body.pano-mode .tour-progress,
+    body.pano-mode .tour-pc-tip,
+    body.pano-mode .tour-hint { display: none; }
+
+    /* 全景模式：底部栏默认下滑收起，避免遮挡第三方全景自带的相册/控件 */
+    .tour-spots-toggle {
+      position: fixed; left: 18px; bottom: 110px; z-index: 31;
+      display: none; padding: 8px 16px; border-radius: 40px;
+      border: 1px solid rgba(212, 168, 67, 0.5);
+      background: rgba(10, 4, 4, 0.72); backdrop-filter: blur(10px);
+      color: #f5d78e; font-size: 0.78rem;
+      font-family: 'STKaiti', 'KaiTi', serif; letter-spacing: 0.1em;
+      cursor: pointer; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    }
+    body.pano-mode .tour-spots-toggle { display: block; }
+    body.pano-mode .tour-bar {
+      z-index: 32;
+      transform: translate(-50%, calc(100% + 30px));
+      transition: transform 0.35s ease;
+    }
+    body.pano-mode.bar-open .tour-bar { transform: translate(-50%, -118px); }
+    body.pano-mode.bar-open .tour-spots-toggle { bottom: 198px; }
+    body.pano-mode.bar-open #musicToggle { bottom: 198px; }
+    body.pano-mode #musicToggle { bottom: 108px; }
+    body.pano-mode .tour-pano-badge { right: 82px; bottom: 118px; }
+    @media (max-width: 768px) {
+      body.pano-mode .tour-spots-toggle { left: 12px; bottom: 124px; padding: 7px 13px; font-size: 0.68rem; }
+      body.pano-mode.bar-open .tour-spots-toggle { bottom: 206px; }
+      body.pano-mode.bar-open #musicToggle { bottom: 206px; }
+      body.pano-mode #musicToggle { bottom: 124px; }
+      body.pano-mode .tour-pano-badge { right: 60px; bottom: 92px; }
+    }
+
+    /* 全景加载失败兜底 */
+    .veil-fallback {
+      position: absolute; bottom: 32%; left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 18px;
+      border: 1px solid rgba(212, 168, 67, 0.5);
+      border-radius: 30px;
+      background: rgba(0, 0, 0, 0.5);
+      color: #f5d78e; font-size: 0.78rem;
+      font-family: 'STKaiti', 'KaiTi', serif;
+      cursor: pointer; display: none;
+    }
+    .veil-fallback.show { display: block; }
+    .veil-fallback:hover { background: rgba(160, 24, 24, 0.6); }
+  </style>
+</head>
+<body>
+
+  <!-- 背景音乐 -->
+  <audio id="bgMusic" loop preload="auto">
+    <source src="audio/bgm.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- 开场 -->
+  <div class="tour-intro" id="tourIntro">
+    <div class="tour-intro-title">云游古蔺</div>
+    <div class="tour-intro-sub">沉 浸 全 景 漫 游</div>
+  </div>
+
+  <!-- 全景舞台 -->
+  <div class="tour-viewport" id="tourViewport"></div>
+  <!-- 百度地图全景（仅电脑端）：太平/黄荆官网街景分享页、千鸟湖 H5 航拍全景，免费无限时 -->
+  <iframe class="tour-pano" id="tourPano" allowfullscreen
+    referrerpolicy="no-referrer-when-downgrade" title="百度地图全景"></iframe>
+  <div class="tour-pano-badge" id="panoBadge">全景 · 百度地图提供</div>
+  <div class="tour-vignette"></div>
+  <div class="tour-veil" id="tourVeil"><span class="veil-fallback" id="veilFallback">加载较慢？点此切换到照片模式</span></div>
+
+  <!-- 顶部信息 -->
+  <div class="tour-top">
+    <div class="tour-title" id="tourTitle"></div>
+    <div class="tour-desc" id="tourDesc"></div>
+    <div class="tour-pc-tip" id="tourPcTip">想获得更好的 VR 全景效果，请在电脑端打开本站，可走进太平古镇、黄荆老林官方街景</div>
+  </div>
+  <a href="/" class="tour-close" aria-label="返回主页">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </a>
+
+  <!-- 拖拽提示 -->
+  <div class="tour-hint" id="tourHint">‹ 按住拖动 · 360° 环视美景 ›</div>
+
+  <!-- 底部栏（景区切换） -->
+  <div class="tour-bar">
+    <div class="tour-spots" id="tourSpots"></div>
+  </div>
+  <!-- 全景模式下底部栏收起后的展开开关（避免遮挡第三方全景自带控件） -->
+  <button class="tour-spots-toggle" id="tourSpotsToggle" aria-label="切换景区">切换景区</button>
+
+  <!-- 音乐按钮 -->
+  <button id="musicToggle" aria-label="背景音乐">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 18V5l12-2v13"/>
+      <circle cx="6" cy="18" r="3"/>
+      <circle cx="18" cy="16" r="3"/>
+    </svg>
+  </button>
+
+  <script>
+    /* 背景音乐：跨页续播（与展厅页同一套 sessionStorage 状态） */
+    (function () {
+      const bgm = document.getElementById('bgMusic');
+      const btn = document.getElementById('musicToggle');
+      if (!bgm || !btn) return;
+
+      const VOLUME = 0.3;
+      const savedTime = parseFloat(sessionStorage.getItem('bgm_time') || '0');
+      const wasPlaying = sessionStorage.getItem('bgm_playing') === 'true';
+
+      function playMusic() {
+        bgm.volume = VOLUME;
+        bgm.play().then(() => {
+          btn.classList.add('playing');
+          btn.classList.remove('muted');
+        }).catch(() => {});
+      }
+
+      function pauseMusic() {
+        bgm.pause();
+        btn.classList.remove('playing');
+        btn.classList.add('muted');
+      }
+
+      if (savedTime > 0) {
+        bgm.addEventListener('loadedmetadata', function () {
+          if (bgm.duration && savedTime < bgm.duration) {
+            bgm.currentTime = savedTime;
+          }
+        }, { once: true });
+      }
+
+      if (wasPlaying) {
+        let started = false;
+        ['click', 'touchstart', 'keydown', 'pointerdown'].forEach(evt => {
+          document.addEventListener(evt, () => {
+            if (started) return;
+            started = true;
+            playMusic();
+          }, { passive: true, once: true });
+        });
+      } else {
+        btn.classList.add('muted');
+      }
+
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (bgm.paused) playMusic();
+        else pauseMusic();
+      });
+
+      window.addEventListener('beforeunload', function () {
+        sessionStorage.setItem('bgm_time', bgm.currentTime);
+        sessionStorage.setItem('bgm_playing', !bgm.paused);
+      });
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+          sessionStorage.setItem('bgm_time', bgm.currentTime);
+          sessionStorage.setItem('bgm_playing', !bgm.paused);
+        }
+      });
+
+      if (bgm.paused) btn.classList.add('muted');
+      else btn.classList.add('playing');
+    })();
+  </script>
+
+  <!-- Three.js（国内 npmmirror 镜像，避免 unpkg 被墙） -->
+  <script src="https://registry.npmmirror.com/three/0.128.0/files/build/three.min.js"></script>
+  <script src="./js/local-links.js"></script>
+  <script src="./js/tour.js?v=15"></script>
+  <!-- 访问统计 + PWA 离线缓存 -->
+  <script src="./js/analytics.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    }
+  </script>
+</body>
+</html>

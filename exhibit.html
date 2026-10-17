@@ -288,120 +288,7 @@
       color: rgba(245, 215, 142, 0.35);
       border-color: rgba(212, 168, 67, 0.2);
     }
-    #musicToggle.muted svg { animation: none; }
-
-    /* 文旅沉浸导览 */
-    .guide-entry {
-      position: fixed; left: 30px; bottom: 30px; z-index: 9998;
-      padding: 10px 20px; border-radius: 30px;
-      border: 1px solid rgba(212, 168, 67, 0.6);
-      background: rgba(30, 10, 8, 0.8); backdrop-filter: blur(10px);
-      color: #f5d78e; font-size: 13px; letter-spacing: 2px;
-      cursor: pointer; transition: all 0.3s ease;
-      font-family: 'STKaiti', 'KaiTi', serif;
-    }
-    .guide-entry:hover { border-color: #f5d78e; background: rgba(140, 24, 20, 0.85); }
-
-    .guide-ui { position: fixed; inset: 0; z-index: 9995; display: none; }
-    .guide-ui.on { display: block; }
-    .guide-stage { position: absolute; inset: 0; overflow: hidden; background: #050101; cursor: grab; touch-action: none; }
-    .guide-stage:active { cursor: grabbing; }
-    .guide-img {
-      position: absolute; top: 50%; left: 50%;
-      opacity: 0; transition: opacity 0.7s ease;
-      will-change: transform, opacity;
-      pointer-events: none; user-select: none; -webkit-user-drag: none;
-    }
-    .guide-img.show { opacity: 1; }
-    .guide-vignette {
-      position: absolute; inset: 0; pointer-events: none;
-      background:
-        linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, transparent 22%, transparent 72%, rgba(0, 0, 0, 0.55) 100%),
-        radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%);
-    }
-    .guide-top {
-      position: absolute; top: 0; left: 0; right: 0;
-      padding: 24px 32px 44px; text-align: center; pointer-events: none;
-    }
-    .guide-title {
-      font-family: 'STKaiti', 'KaiTi', serif; font-size: 1.5rem; font-weight: 700;
-      letter-spacing: 0.35em; color: #f5d78e; padding-left: 0.35em;
-      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
-    }
-    .guide-desc {
-      margin-top: 8px; font-size: 0.8rem; color: rgba(245, 215, 142, 0.9);
-      letter-spacing: 1px; text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
-    }
-    .guide-progress {
-      display: inline-block; margin-top: 10px;
-      font-size: 0.72rem; letter-spacing: 2px; color: rgba(245, 215, 142, 0.75);
-      border: 1px solid rgba(212, 168, 67, 0.4); border-radius: 20px;
-      padding: 3px 12px; background: rgba(10, 4, 4, 0.5); backdrop-filter: blur(6px);
-    }
-    .guide-exit {
-      position: absolute; top: 24px; right: 32px;
-      width: 44px; height: 44px; border-radius: 50%;
-      border: 1px solid rgba(212, 168, 67, 0.5);
-      background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);
-      color: #f5d78e; font-size: 20px; line-height: 1; cursor: pointer;
-      transition: all 0.3s ease; pointer-events: auto;
-    }
-    .guide-exit:hover { background: rgba(160, 24, 24, 0.7); border-color: #f5d78e; transform: rotate(90deg); }
-    .guide-arrow {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      width: 46px; height: 46px; border-radius: 50%;
-      border: 1px solid rgba(212, 168, 67, 0.5);
-      background: rgba(10, 4, 4, 0.55); backdrop-filter: blur(8px);
-      color: #f5d78e; font-size: 26px; line-height: 1;
-      cursor: pointer; transition: all 0.3s ease; z-index: 5;
-      display: flex; align-items: center; justify-content: center;
-      padding-bottom: 3px;
-    }
-    .guide-arrow:hover { background: rgba(160, 24, 24, 0.75); border-color: #f5d78e; }
-    .guide-arrow.prev { left: 24px; }
-    .guide-arrow.next { right: 24px; }
-    .guide-bar {
-      position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
-      display: flex; gap: 8px; align-items: center; padding: 6px;
-      max-width: 94vw;
-      background: rgba(10, 4, 4, 0.65); backdrop-filter: blur(14px);
-      border: 1px solid rgba(212, 168, 67, 0.35); border-radius: 50px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    }
-    .guide-spots { display: flex; gap: 8px; overflow-x: auto; max-width: 66vw; }
-    .guide-spots::-webkit-scrollbar { display: none; }
-    .guide-spot-btn {
-      padding: 9px 18px; background: transparent; border: none; border-radius: 40px;
-      color: rgba(245, 215, 142, 0.75); font-size: 0.82rem;
-      font-family: 'STKaiti', 'KaiTi', serif; letter-spacing: 0.08em;
-      cursor: pointer; transition: all 0.3s ease; white-space: nowrap;
-    }
-    .guide-spot-btn:hover { color: #f5d78e; background: rgba(212, 168, 67, 0.12); }
-    .guide-spot-btn.active {
-      background: linear-gradient(135deg, #d4a843, #b8860b);
-      color: #1a0a0a; font-weight: 700;
-      box-shadow: 0 4px 16px rgba(212, 168, 67, 0.5);
-    }
-    .guide-auto {
-      padding: 9px 16px; border-radius: 40px; flex-shrink: 0;
-      border: 1px solid rgba(212, 168, 67, 0.55); background: rgba(138, 26, 26, 0.4);
-      color: #f5d78e; font-size: 0.78rem; letter-spacing: 1px;
-      cursor: pointer; transition: all 0.3s ease; white-space: nowrap;
-      font-family: 'STKaiti', 'KaiTi', serif;
-    }
-    .guide-auto:hover { background: rgba(160, 24, 24, 0.7); }
-    .guide-auto.on {
-      background: linear-gradient(135deg, #d4a843, #b8860b);
-      color: #1a0a0a; font-weight: 700;
-    }
-
-    /* 导览模式下隐藏展厅界面元素 */
-    body.guide-mode .exhibit-header,
-    body.guide-mode .exhibit-nav,
-    body.guide-mode .exhibit-hint,
-    body.guide-mode #tourBtn,
-    body.guide-mode #tourCaption,
-    body.guide-mode .guide-entry { display: none !important; }
+    #musicToggle.muted svg { animation: none; }
 
     /* 移动端 */
     @media (max-width: 768px) {
@@ -434,20 +321,6 @@
 
       #musicToggle { bottom: 20px; right: 16px; width: 40px; height: 40px; }
       #musicToggle svg { width: 16px; height: 16px; }
-
-      .guide-entry { left: 16px; bottom: 20px; padding: 8px 14px; font-size: 12px; letter-spacing: 1px; }
-      .guide-top { padding: 14px 16px 34px; }
-      .guide-title { font-size: 1.05rem; letter-spacing: 0.2em; }
-      .guide-desc { font-size: 0.68rem; }
-      .guide-progress { font-size: 0.62rem; margin-top: 6px; }
-      .guide-exit { top: 14px; right: 16px; width: 32px; height: 32px; font-size: 16px; }
-      .guide-arrow { width: 36px; height: 36px; font-size: 20px; }
-      .guide-arrow.prev { left: 10px; }
-      .guide-arrow.next { right: 10px; }
-      .guide-bar { bottom: 14px; gap: 5px; padding: 4px; }
-      .guide-spots { max-width: 58vw; gap: 5px; }
-      .guide-spot-btn { padding: 6px 11px; font-size: 0.66rem; letter-spacing: 0.02em; }
-      .guide-auto { padding: 6px 11px; font-size: 0.66rem; }
     }
   </style>
 </head>
@@ -504,30 +377,6 @@
   <div class="exhibit-info" id="exhibitInfo">
     <div class="exhibit-info-title" id="exhibitInfoTitle"></div>
     <div class="exhibit-info-desc" id="exhibitInfoDesc"></div>
-  </div>
-
-  <!-- 文旅沉浸导览入口 -->
-  <button class="guide-entry" id="guideEntry">🧭 沉浸导览</button>
-
-  <!-- 文旅沉浸导览 UI -->
-  <div class="guide-ui" id="guideUi">
-    <div class="guide-stage" id="guideStage">
-      <img class="guide-img" id="guideImgA" alt="">
-      <img class="guide-img" id="guideImgB" alt="">
-      <div class="guide-vignette"></div>
-    </div>
-    <div class="guide-top">
-      <div class="guide-title" id="guideTitle"></div>
-      <div class="guide-desc" id="guideDesc"></div>
-      <div class="guide-progress" id="guideProgress"></div>
-      <button class="guide-exit" id="guideExit" aria-label="退出导览">×</button>
-    </div>
-    <button class="guide-arrow prev" id="guidePrev" aria-label="上一个景点">‹</button>
-    <button class="guide-arrow next" id="guideNext" aria-label="下一个景点">›</button>
-    <div class="guide-bar">
-      <button class="guide-auto" id="guideAuto">▶ 自动导览</button>
-      <div class="guide-spots" id="guideSpots"></div>
-    </div>
   </div>
 
   <!-- 音乐按钮 -->
@@ -617,7 +466,7 @@
   <script src="./js/vendor/qrcode.js"></script>
 
   <script src="./js/local-links.js"></script>
-  <script src="./js/exhibit.js?v=6"></script>
+  <script src="./js/exhibit.js?v=7"></script>
   <!-- 访问统计 + PWA 离线缓存 -->
   <script src="./js/analytics.js"></script>
   <script>

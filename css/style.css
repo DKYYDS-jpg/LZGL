@@ -3928,17 +3928,22 @@ img {
   margin-right: auto;
 }
 
-.section-3d .btn-3d {
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.section-3d {
-  position: relative;
-  padding: 120px 24px;
-  background: linear-gradient(180deg, #0f0a1a 0%, #1a0a0a 100%);
-  text-align: center;
-  overflow: hidden;
+.section-3d .btn-3d {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 云游古蔺入口区：山水青绿调，与 3D 展厅的暗紫调区分 */
+.section-tour {
+  background: linear-gradient(180deg, #0a1610 0%, #1a0f0a 100%);
+}
+
+.section-3d {
+  position: relative;
+  padding: 120px 24px;
+  background: linear-gradient(180deg, #0f0a1a 0%, #1a0a0a 100%);
+  text-align: center;
+  overflow: hidden;
 }
 
 .section-3d .section-inner {
