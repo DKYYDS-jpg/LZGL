@@ -1652,6 +1652,7 @@
   let tourHallKey = 'redarmy';
   let tour = { active: false, timer: null };
   let tourBtn = null, tourCaption = null;
+  let tourAudio = null;   // 当前播放的展品讲解音频
 
   const TOUR_RADIUS = 9;         // 与 buildGallery 的 RADIUS 保持一致
   const TOUR_FLY_SPEED = 0.011;  // 相机飞行步进（约 1.5 秒/站）
@@ -1737,8 +1738,8 @@
       cameraTween.noRestore = true;
       cameraTween.active = true;
 
-      // 语音讲解：完整读完介绍后停 1 秒 → 下一站
-      speakText(item.name + '。' + item.desc, () => {
+      // 语音讲解：播放展品 mp3（晓晓自然音），完整读完后停 1 秒 → 下一站
+      speakExhibit(item, () => {
         if (!tour.active) return;
         tour.timer = setTimeout(() => {
           if (!tour.active) return;
@@ -1771,7 +1772,35 @@
   }
 
   function stopVoices() {
+    try {
+      if (tourAudio) { tourAudio.pause(); tourAudio.currentTime = 0; tourAudio = null; }
+    } catch (e) {}
     try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) {}
+  }
+
+  // 播放展品讲解音频（mp3），失败或无音频时回退到浏览器 TTS
+  function speakExhibit(item, onDone) {
+    let done = false;
+    const finish = () => { if (done) return; done = true; if (onDone) onDone(); };
+    // 从 model 文件名推导音频 key（与 audio/exhibit/*.mp3 一一对应）
+    let key = null;
+    try {
+      key = item.model.replace('models/', '').replace('.ply', '');
+    } catch (e) { key = null; }
+    if (key) {
+      const audio = new Audio('audio/exhibit/' + key + '.mp3');
+      tourAudio = audio;
+      audio.onended = finish;
+      audio.onerror = () => {
+        // 音频加载失败：回退到浏览器 TTS 朗读
+        speakText(item.name + '。' + item.desc, finish);
+      };
+      audio.play().catch(() => {
+        speakText(item.name + '。' + item.desc, finish);
+      });
+    } else {
+      speakText(item.name + '。' + item.desc, finish);
+    }
   }
 
   function speakText(text, onDone) {
