@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>页面走丢了 | 重走长征路 · 古蔺</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #1a0f0a 0%, #2b1610 60%, #1a0f0a 100%);
+    color: #f5d78e;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    text-align: center;
+    padding: 24px;
+  }
+  .box { max-width: 420px; }
+  .code {
+    font-size: 4rem;
+    font-weight: 700;
+    letter-spacing: .2em;
+    color: #d4a843;
+    opacity: .9;
+  }
+  h1 { font-size: 1.4rem; margin: 16px 0 10px; font-weight: 600; }
+  p { color: #c9b083; font-size: .95rem; line-height: 1.8; }
+  .links { margin-top: 28px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .links a {
+    display: inline-block;
+    padding: 10px 26px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: .95rem;
+    transition: opacity .2s;
+  }
+  .links a:hover { opacity: .85; }
+  .btn-primary { background: #d4a843; color: #1a0f0a; font-weight: 600; }
+  .btn-ghost { border: 1px solid #d4a843; color: #f5d78e; }
+  #retryBox { display: none; }
+</style>
+</head>
+<body>
+  <div class="box">
+    <div class="code">404</div>
+
+    <div id="redirectBox">
+      <h1>正在为你打开正确页面…</h1>
+      <p>地址好像迷路了，马上就好。</p>
+    </div>
+
+    <div id="retryBox">
+      <h1>这个页面暂时走丢了</h1>
+      <p>你可以返回首页继续参观，或稍后再试。</p>
+      <div class="links">
+        <a href="/" class="btn-primary" id="homeLink">返回首页</a>
+        <a href="#" class="btn-ghost" id="retryLink">重试一次</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var path = location.pathname || '/';
+  var search = location.search || '';
+  var hash = location.hash || '';
+
+  function showRetry() {
+    document.getElementById('redirectBox').style.display = 'none';
+    document.getElementById('retryBox').style.display = 'block';
+  }
+
+  // 首页或带扩展名的真实文件缺失：无法自动修复，直接给出口
+  var lastSeg = path.split('/').pop() || '';
+  var looksLikePage = path !== '/' && lastSeg.indexOf('.') === -1;
+
+  if (!looksLikePage) {
+    showRetry();
+    document.getElementById('retryLink').onclick = function (e) {
+      e.preventDefault();
+      location.reload();
+    };
+    return;
+  }
+
+  // 无后缀页面（如 /detail）：尝试访问对应的 .html 文件
+  var target = path + '.html' + search + hash;
+
+  // 防循环：同一地址 15 秒内只自动跳转一次
+  var KEY = 'lzgl_404_guard';
+  var blocked = false;
+  try {
+    var rec = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+    if (rec && rec.url === path && (Date.now() - rec.t) < 15000) {
+      blocked = true;
+    } else {
+      sessionStorage.setItem(KEY, JSON.stringify({ url: path, t: Date.now() }));
+    }
+  } catch (e) { /* sessionStorage 不可用时照常跳转 */ }
+
+  if (blocked) {
+    showRetry();
+    var retry = document.getElementById('retryLink');
+    retry.textContent = '再试一次';
+    retry.onclick = function (e) {
+      e.preventDefault();
+      try { sessionStorage.removeItem(KEY); } catch (err) {}
+      location.replace(target);
+    };
+    return;
+  }
+
+  location.replace(target);
+})();
+</script>
+</body>
+</html>
