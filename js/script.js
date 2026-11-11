@@ -853,10 +853,10 @@ if (scrollHintEl) {
     import { init } from 'https://registry.npmmirror.com/@waline/client/v3/files/dist/waline.js';
     init({
       el: '#waline',
-      serverURL: 'https://app-production-b050.up.railway.app',
+      serverURL: 'https://1003-10f38yl31m.maozi.io/',
       lang: 'zh-CN',
       path: '/',              // ← 加这一行，把所有页面的评论都归到一个路径下
-      turnstileKey: '0x4AAAAAAFVQk0eqrO1L9-WI',   // ← 加这一行
+      turnstileKey: '0x4AAAAAAFVQk0eqrO1L9-WI',
       locale: {
         placeholder: '写下你的留言...',
       },
