@@ -498,7 +498,22 @@ const btnDownload = document.getElementById('btnDownload');
 btnDownload.addEventListener('click', () => {
   const posterCard = document.getElementById('posterCard');
   if (typeof html2canvas === 'undefined') {
-    alert('海报生成库未加载，请检查网络后重试');
+    /* 海报库按需加载，避免首屏下载 200KB+ 的第三方脚本 */
+    btnDownload.textContent = '加载中...';
+    btnDownload.disabled = true;
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload = () => {
+      btnDownload.disabled = false;
+      btnDownload.textContent = '保存海报';
+      btnDownload.click();
+    };
+    s.onerror = () => {
+      btnDownload.disabled = false;
+      btnDownload.textContent = '保存海报';
+      alert('海报生成库加载失败，请检查网络后重试');
+    };
+    document.head.appendChild(s);
     return;
   }
   btnDownload.textContent = '生成中...';
@@ -857,6 +872,7 @@ if (scrollHintEl) {
       lang: 'zh-CN',
       path: '/',              // ← 加这一行，把所有页面的评论都归到一个路径下
       turnstileKey: '0x4AAAAAAFVQk0eqrO1L9-WI',
+      emoji: ['/images/emoji'],
       locale: {
         placeholder: '写下你的留言...',
       },
@@ -1242,4 +1258,195 @@ document.querySelectorAll('.cloud-tag[data-id]').forEach(tag => {
     quoteIndex = (quoteIndex + 1) % QUOTES.length;
     renderQuote(true);
   });
+})();
+
+/* ==================== 19. 留言墙 + 留言分享卡 ==================== */
+(function initGuestWall() {
+  const grid = document.getElementById('glWallGrid');
+  const countEl = document.getElementById('glWallCount');
+  if (!grid) return;
+
+  const SERVER = 'https://1003-10f38yl31m.maozi.io/';
+  let cache = [];
+
+  const strip = (html) => {
+    const d = document.createElement('div');
+    d.innerHTML = html || '';
+    return (d.textContent || '').replace(/\s+/g, ' ').trim();
+  };
+  const fmtDate = (t) => {
+    const d = new Date(t);
+    if (isNaN(d)) return '';
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  function renderWall(list, count) {
+    grid.innerHTML = '';
+    if (!list.length) {
+      grid.innerHTML = '<div class="gl-wall-empty">还没有留言，来做第一个留言的人。</div>';
+      return;
+    }
+    list.forEach((c) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'gl-wall-card';
+      const av = c.avatar ? `<img src="${c.avatar}" alt="" loading="lazy" />` : '<span class="gl-wall-dot"></span>';
+      card.innerHTML = `
+        <div class="gl-wall-top">
+          ${av}
+          <span class="gl-wall-nick">${escapeHtml(c.nick || '访客')}</span>
+          <span class="gl-wall-time">${fmtDate(c.time)}</span>
+        </div>
+        <p class="gl-wall-text">${escapeHtml(strip(c.comment))}</p>`;
+      card.addEventListener('click', () => {
+        const target = document.getElementById('waline');
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      grid.appendChild(card);
+    });
+    if (countEl) countEl.textContent = count + ' 条';
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (m) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]
+    ));
+  }
+
+  function loadWall() {
+    fetch(SERVER + 'api/comment?path=/&pageSize=3')
+      .then((r) => r.json())
+      .then((res) => {
+        const d = res && res.data;
+        if (!d) return;
+        cache = d.data || [];
+        renderWall(cache.slice(0, 3), d.count || 0);
+      })
+      .catch(() => {});
+  }
+
+  /* 为每条留言追加「存卡片」按钮 */
+  function addShareButtons(root) {
+    root.querySelectorAll('.wl-card-item').forEach((item) => {
+      if (item.dataset.glShare) return;
+      item.dataset.glShare = '1';
+      const actions = item.querySelector('.wl-comment-actions');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'gl-share-btn';
+      btn.textContent = '存卡片';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const ok = makeCard(item);
+        btn.textContent = ok ? '已保存' : '暂无内容';
+        setTimeout(() => { btn.textContent = '存卡片'; }, 1600);
+      });
+      if (actions) actions.appendChild(btn);
+      else item.appendChild(btn);
+    });
+  }
+
+  function makeCard(item) {
+    const nick = (item.querySelector('.wl-nick')?.textContent || '访客').trim();
+    const time = (item.querySelector('.wl-time')?.textContent || '').trim();
+    const bodyEl = item.querySelector('.wl-content') || item.querySelector('.wl-card');
+    let text = '';
+    try {
+      text = ((bodyEl && (bodyEl.innerText || bodyEl.textContent)) || '').trim();
+    } catch (err) { text = ''; }
+    text = text.replace(/\n{2,}/g, '\n');
+    if (!text) return false;
+    if (text.length > 160) text = text.slice(0, 160) + '……';
+
+    const W = 900, H = 1200;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const g = c.getContext('2d');
+
+    const bg = g.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0, '#1a0d0e');
+    bg.addColorStop(1, '#2a1416');
+    g.fillStyle = bg;
+    g.fillRect(0, 0, W, H);
+
+    g.strokeStyle = 'rgba(212,168,67,.65)';
+    g.lineWidth = 2;
+    g.strokeRect(36, 36, W - 72, H - 72);
+    g.strokeStyle = 'rgba(212,168,67,.25)';
+    g.strokeRect(50, 50, W - 100, H - 100);
+
+    g.fillStyle = '#d4a843';
+    g.font = '600 26px "Microsoft YaHei", sans-serif';
+    g.fillText('重走长征路 · 古蔺', 88, 128);
+    g.fillStyle = 'rgba(245,233,208,.5)';
+    g.font = '400 18px "Microsoft YaHei", sans-serif';
+    g.fillText('数字乡村服务设计 · 留言卡', 88, 164);
+
+    g.fillStyle = 'rgba(212,168,67,.35)';
+    g.font = '400 120px Georgia, serif';
+    g.fillText('“', 78, 320);
+
+    g.fillStyle = 'rgba(255,255,255,.92)';
+    g.font = '400 36px "Microsoft YaHei", sans-serif';
+    const maxW = W - 176;
+    let line = '', y = 330;
+    const chars = text.split('');
+    for (let i = 0; i < chars.length; i++) {
+      const ch = chars[i] === '\n' ? '' : chars[i];
+      if (chars[i] === '\n' || g.measureText(line + ch).width > maxW) {
+        g.fillText(line, 88, y);
+        y += 62;
+        line = ch;
+        if (y > 900) { line += '……'; break; }
+      } else {
+        line += ch;
+      }
+    }
+    if (y <= 900) g.fillText(line, 88, y);
+
+    g.fillStyle = 'rgba(212,168,67,.35)';
+    g.font = '400 120px Georgia, serif';
+    g.textAlign = 'right';
+    g.fillText('”', W - 78, Math.min(y + 70, 1040));
+    g.textAlign = 'left';
+
+    g.strokeStyle = 'rgba(212,168,67,.25)';
+    g.beginPath();
+    g.moveTo(88, H - 220);
+    g.lineTo(W - 88, H - 220);
+    g.stroke();
+
+    g.fillStyle = '#f5e9d0';
+    g.font = '600 30px "Microsoft YaHei", sans-serif';
+    g.fillText(nick, 88, H - 160);
+    g.fillStyle = 'rgba(255,255,255,.45)';
+    g.font = '400 22px "Microsoft YaHei", sans-serif';
+    g.fillText(time, 88, H - 120);
+
+    g.fillStyle = 'rgba(245,233,208,.35)';
+    g.font = '400 20px "Microsoft YaHei", sans-serif';
+    g.textAlign = 'right';
+    g.fillText('赤水河畔 · 一条河的数字叙事', W - 88, H - 120);
+    g.textAlign = 'left';
+
+    const a = document.createElement('a');
+    a.download = '留言卡-' + nick.replace(/[\\/:*?"<>|]/g, '') + '.png';
+    a.href = c.toDataURL('image/png');
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 0);
+    return true;
+  }
+
+  loadWall();
+
+  /* Waline 异步渲染，监听后补按钮 */
+  const wall = document.getElementById('waline');
+  if (wall) {
+    addShareButtons(wall);
+    new MutationObserver(() => addShareButtons(wall))
+      .observe(wall, { childList: true, subtree: true });
+  }
 })();

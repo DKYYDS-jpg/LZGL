@@ -247,6 +247,47 @@
   };
 
   /* ==========================================================
+     设备能力检测：低端机降级 + WebGL 不可用兜底
+     ========================================================== */
+  const LOW_END =
+    (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+    (navigator.deviceMemory && navigator.deviceMemory <= 4) ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function hasWebGL() {
+    try {
+      const c = document.createElement('canvas');
+      return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function showGLFallback() {
+    const canvas = document.getElementById('canvas3d');
+    if (canvas) canvas.style.display = 'none';
+    const d = document.createElement('div');
+    d.className = 'gl-fallback';
+    d.innerHTML =
+      '<h2>当前设备暂不支持 3D 展厅</h2>' +
+      '<p>3D 展厅需要浏览器开启 WebGL。你仍可继续浏览古蔺的图文内容，或换一台设备重新进入。</p>' +
+      '<a href="/">返回主站</a>';
+    document.body.appendChild(d);
+    const st = document.createElement('style');
+    st.textContent = `
+      .gl-fallback { position: fixed; inset: 0; z-index: 99999; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 14px; padding: 32px; text-align: center;
+        background: radial-gradient(120% 120% at 50% 0%, #2d1515 0%, #120807 70%);
+        color: #f0e2c8; font-family: inherit; }
+      .gl-fallback h2 { font-size: 22px; letter-spacing: 3px; color: #f5d78e; font-weight: 600; }
+      .gl-fallback p { max-width: 460px; font-size: 14px; line-height: 1.9; color: rgba(240,226,200,.65); }
+      .gl-fallback a { margin-top: 10px; padding: 11px 26px; border: 1px solid rgba(212,168,67,.6);
+        border-radius: 999px; color: #d4a843; text-decoration: none; font-size: 13px; letter-spacing: 2px; }
+      .gl-fallback a:hover { background: rgba(212,168,67,.1); }`;
+    document.head.appendChild(st);
+  }
+
+  /* ==========================================================
      初始化
      ========================================================== */
   function initScene() {
@@ -257,10 +298,15 @@
     camera.position.set(0, 15, 60);
     camera.lookAt(0, 1.5, 0);
 
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: !LOW_END,
+      alpha: true,
+      powerPreference: LOW_END ? 'low-power' : 'high-performance',
+    });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
+    renderer.setPixelRatio(LOW_END ? 1 : Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = !LOW_END;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1821,8 +1867,12 @@
     }
   }
 
-  initScene();
-  ensureTourUI();
+  if (!hasWebGL()) {
+    showGLFallback();
+  } else {
+    initScene();
+    ensureTourUI();
+  }
 })();
 
 /* ==========================================================

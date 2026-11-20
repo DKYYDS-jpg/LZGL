@@ -1,0 +1,7 @@
+{
+  "name": "古蔺",
+  "prefix": "",
+  "type": "svg",
+  "icon": "huadeng",
+  "items": ["huadeng", "junmao", "tiancheng", "youcai", "miaoxiu", "chishui", "hongxing", "zan"]
+}
