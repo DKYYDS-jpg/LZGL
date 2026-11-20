@@ -557,7 +557,8 @@ const DETAIL_MODEL_MAP = {
 /* ---------- 渲染逻辑 ---------- */
 (function renderDetail() {
   const params = new URLSearchParams(window.location.search);
-  const id = params.get('id');
+  const hashId = decodeURIComponent((window.location.hash.match(/id=([^&]+)/) || [])[1] || '');
+  const id = hashId || params.get('id');
   const data = DETAIL_DATA[id];
 
   const loading = document.getElementById('detailLoading');

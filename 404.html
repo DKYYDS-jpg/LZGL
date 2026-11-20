@@ -72,9 +72,21 @@
     document.getElementById('retryBox').style.display = 'block';
   }
 
+  // 兼容平台把 /detail?id= 重定向成 /detail/?id= 的情况：
+  // 转成 hash 路由，避免再次 404
+  var slashMatch = path.match(/^\/(detail|exhibit|tour)\/?$/);
+  if (slashMatch) {
+    var idm = /[?&]id=([^&]+)/.exec(search);
+    if (slashMatch[1] === 'detail' && idm) {
+      location.replace('/detail#id=' + idm[1]);
+      return;
+    }
+  }
+
   // 首页或带扩展名的真实文件缺失：无法自动修复，直接给出口
-  var lastSeg = path.split('/').pop() || '';
-  var looksLikePage = path !== '/' && lastSeg.indexOf('.') === -1;
+  var cleanPath = path.replace(/\/+$/, '');
+  var lastSeg = cleanPath.split('/').pop() || '';
+  var looksLikePage = cleanPath !== '' && lastSeg.indexOf('.') === -1;
 
   if (!looksLikePage) {
     showRetry();
@@ -86,7 +98,7 @@
   }
 
   // 无后缀页面（如 /detail）：尝试访问对应的 .html 文件
-  var target = path + '.html' + search + hash;
+  var target = cleanPath + '.html' + search + hash;
 
   // 防循环：同一地址 15 秒内只自动跳转一次
   var KEY = 'lzgl_404_guard';

@@ -318,7 +318,7 @@ document.querySelectorAll('.modern-card[data-id], .food-card[data-id]').forEach(
         sessionStorage.setItem('music_time', bgMusic.currentTime);
         sessionStorage.setItem('music_playing', !bgMusic.paused);
       }
-      window.location.href = __localLink('/detail?id=' + encodeURIComponent(id));
+      window.location.href = __localLink('/detail#id=' + encodeURIComponent(id));
     }
   });
 });
@@ -896,7 +896,7 @@ document.querySelectorAll('.cloud-tag[data-id]').forEach(tag => {
         sessionStorage.setItem('music_time', bgMusic.currentTime);
         sessionStorage.setItem('music_playing', !bgMusic.paused);
       }
-      window.location.href = __localLink('/detail?id=' + encodeURIComponent(id));
+      window.location.href = __localLink('/detail#id=' + encodeURIComponent(id));
     }
   });
 });
