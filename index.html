@@ -6134,6 +6134,15 @@
 
   document.body.classList.add('stage-mode');
 
+  /* 红色地图与甜橙树原本在中游面板之外，桌面端会看不到，并入中游面板 */
+  var newPanel = document.getElementById('chapter-new');
+  if (newPanel) {
+    ['interactive', 'adopt'].forEach(function (id) {
+      var sec = document.getElementById(id);
+      if (sec) newPanel.appendChild(sec);
+    });
+  }
+
   var nav = document.createElement('nav');
   nav.className = 'stage-nav';
   nav.setAttribute('role', 'tablist');
