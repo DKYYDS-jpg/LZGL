@@ -31,7 +31,7 @@
   <meta property="og:description" content="太平渡口、四渡赤水、黄荆老林、郎酒飘香——走进古蔺的红色记忆与山水人文。">
   <meta property="og:image" content="https://lzgl-38yl31m.maozi.io/images/og-cover.jpg">
   <meta property="og:url" content="https://lzgl-38yl31m.maozi.io/">
-  <link rel="stylesheet" href="./css/style.css?v=13">
+  <link rel="stylesheet" href="./css/style.css?v=25">
   <link rel="stylesheet" href="https://registry.npmmirror.com/@waline/client/v3/files/dist/waline.css" />
   <!-- 站点图标 + PWA -->
   <link rel="preconnect" href="https://registry.npmmirror.com" crossorigin>
@@ -1534,7 +1534,46 @@
       </div>
     </div>
 
-
+    <!-- 夜行古蔺 · 渡口潜行 -->
+    <section class="ferry-game reveal" id="ferryGame">
+      <div class="fg-head">
+        <div class="fg-kicker">互动 · 四渡赤水</div>
+        <h3 class="fg-title">夜行古蔺 · 渡口</h3>
+        <p class="fg-sub">你是一名红军通信员。夜色里穿过古镇，躲开巡逻的手电光，把口令送到渡口。</p>
+      </div>
+      <div class="fg-hud">
+        <div class="fg-level" id="fgLevel">一渡 · 土城渡口</div>
+        <div class="fg-hud-right">
+          <span class="fg-wtag" id="fgWeaponTag">近战</span>
+          <button type="button" class="fg-fs" id="fgFull">全屏</button>
+          <div class="fg-stars" id="fgStars">★ 0</div>
+        </div>
+      </div>
+      <div class="fg-stage" id="fgStage">
+        <canvas id="fgCanvas" aria-label="俯视角潜行小游戏"></canvas>
+        <div class="fg-touch" id="fgTouch">
+          <div class="fg-tilt" id="fgTilt">倾斜移动</div>
+          <div class="fg-actions">
+            <button type="button" class="fg-weapon" id="fgWeapon">近战</button>
+            <button type="button" class="fg-atk" id="fgAtk" aria-label="攻击">攻击</button>
+          </div>
+        </div>
+        <div class="fg-rotate" id="fgRotate" hidden>
+          <div class="fg-rotate-icon" aria-hidden="true"></div>
+          <p>请把手机横过来</p>
+          <span>横屏后倾斜机身移动，右下按钮攻击</span>
+        </div>
+        <div class="fg-overlay is-show" id="fgOverlay">
+          <div class="fg-overlay-card" id="fgCard">
+            <div class="fg-overlay-title">夜行古蔺</div>
+            <p class="fg-overlay-text">电脑：WASD 移动，空格攻击，1 / 2 切换近战与远程。<br>手机：点出发会自动横屏，倾斜机身移动，右下按钮攻击。<br>躲进芦苇丛，手电就照不到你。摸到右侧渡口即可过关。</p>
+            <button type="button" class="fg-next" id="fgStart">出发</button>
+          </div>
+        </div>
+      </div>
+      <div class="fg-meter"><i id="fgBar"></i><span id="fgMeterText">暴露 0%</span></div>
+      <div class="fg-tip">WASD / 方向键移动 · 空格攻击 · 1 / 2 切换近战 / 远程 · 手机横屏倾斜机身移动</div>
+    </section>
 
 
 
@@ -3233,6 +3272,52 @@
           </div>
         </div>
         <audio id="smAudio" preload="none"></audio>
+
+        <!-- 听见古蔺 · 方言小考 -->
+        <div class="listen-game" id="listenGame">
+          <div class="lg-head">
+            <div class="lg-heading">
+              <span class="lg-kicker">互动 · 听见古蔺</span>
+              <h3 class="lg-title">方言小考 · 说话的人是谁</h3>
+              <p class="lg-sub">五段真人四川话，五种古蔺日常。听一段，猜猜说话的人是谁。</p>
+            </div>
+            <div class="lg-score" id="lgScore">★ 0 / 5</div>
+          </div>
+
+          <div class="lg-start" id="lgStartPanel">
+            <div class="lg-start-star" aria-hidden="true">★</div>
+            <p class="lg-start-text">5 段方言 · 每段十几秒 · 可反复重听</p>
+            <button type="button" class="lg-btn" id="lgStartBtn">开始听</button>
+          </div>
+
+          <div class="lg-play" id="lgPlayPanel" hidden>
+            <div class="lg-qmeta">
+              <span id="lgProgress">第 1 题 · 共 5 题</span>
+              <span class="lg-dots" id="lgDots" aria-hidden="true"></span>
+            </div>
+            <div class="lg-audio">
+              <button type="button" class="lg-playbtn" id="lgPlayBtn" aria-label="播放这段方言">▶</button>
+              <div class="lg-track"><i id="lgBar"></i></div>
+              <button type="button" class="lg-again" id="lgAgainBtn">重听</button>
+            </div>
+            <p class="lg-question">这段声音里，说话的人是？</p>
+            <div class="lg-options" id="lgOptions"></div>
+            <div class="lg-feedback" id="lgFeedback" hidden role="status"></div>
+            <div class="lg-actions">
+              <button type="button" class="lg-btn" id="lgNextBtn" hidden>下一题</button>
+            </div>
+          </div>
+
+          <div class="lg-end" id="lgEndPanel" hidden>
+            <div class="lg-end-score" id="lgEndScore">0 / 5</div>
+            <div class="lg-end-title" id="lgEndTitle">再听一遍</div>
+            <p class="lg-end-text" id="lgEndText"></p>
+            <button type="button" class="lg-btn" id="lgAgainGame">再考一次</button>
+          </div>
+
+          <audio id="lgAudio" preload="none"></audio>
+          <p class="lg-tip">真人录音 · 四川话（泸州口音） · 建议戴耳机</p>
+        </div>
       </section>
   </section>
 
@@ -5722,7 +5807,7 @@
 
 
   <script src="./js/local-links.js"></script>
-  <script src="./js/script.js?v=12"></script>
+  <script src="./js/script.js?v=13"></script>
   <!-- 访问统计（51LA，ID 在 analytics.js 中配置）+ PWA 离线缓存 -->
   <script src="./js/analytics.js"></script>
   <script>
@@ -5891,6 +5976,137 @@
   window.glStopRiverReplay = stopPlay;
 })();
 </script>
+<script src="./js/ferry.js?v=31"></script>
+<script>
+/* 四渡打卡：走过四个篇章，点亮四枚印记 */
+(function () {
+  var KEY = 'glDudu_v1';
+  var STOPS = [
+    { id: 'chapter-red', name: '上游 · 记忆' },
+    { id: 'chapter-new', name: '中游 · 烟火' },
+    { id: 'section3d', name: '下游 · 新生' },
+    { id: 'sectionTour', name: '云游山水' }
+  ];
+  var saved = [];
+  try { saved = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) {}
+  if (!(saved instanceof Array)) saved = [];
+
+  var done = {};
+  STOPS.forEach(function (s) {
+    if (saved.indexOf(s.id) > -1) done[s.id] = true;
+  });
+
+  var pill = document.createElement('button');
+  pill.type = 'button';
+  pill.className = 'dudu-pill';
+  pill.setAttribute('aria-label', '四渡打卡进度');
+  pill.setAttribute('aria-expanded', 'false');
+  pill.setAttribute('aria-controls', 'duduCard');
+  pill.innerHTML = '<span class="dudu-star">★</span>' +
+    '<span class="dudu-text">四渡 <b>0</b>/4</span>' +
+    '<span class="dudu-dots"><i></i><i></i><i></i><i></i></span>';
+
+  var card = document.createElement('div');
+  card.className = 'dudu-card';
+  card.id = 'duduCard';
+  card.hidden = true;
+  card.innerHTML = '<h4>四渡打卡</h4><ul>' +
+    STOPS.map(function (s) {
+      return '<li data-id="' + s.id + '"><i></i>' + s.name + '</li>';
+    }).join('') +
+    '</ul><p>走过四个篇章，点亮四枚印记。进度只保存在本机。</p>';
+
+  document.body.appendChild(pill);
+  document.body.appendChild(card);
+
+  function render() {
+    var n = 0;
+    STOPS.forEach(function (s) { if (done[s.id]) n++; });
+    pill.querySelector('.dudu-text').innerHTML = '四渡 <b>' + n + '</b>/4' +
+      (n === STOPS.length ? ' · 已集齐' : '');
+    var dots = pill.querySelectorAll('.dudu-dots i');
+    var lis = card.querySelectorAll('li');
+    STOPS.forEach(function (s, i) {
+      if (dots[i]) dots[i].className = done[s.id] ? 'on' : '';
+      if (lis[i]) lis[i].className = done[s.id] ? 'is-on' : '';
+    });
+    pill.classList.toggle('is-full', n === STOPS.length);
+  }
+
+  function save() {
+    var list = STOPS.filter(function (s) { return done[s.id]; }).map(function (s) { return s.id; });
+    try { localStorage.setItem(KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function mark(id) {
+    var known = false;
+    for (var i = 0; i < STOPS.length; i++) if (STOPS[i].id === id) known = true;
+    if (!known || done[id]) return;
+    done[id] = true;
+    save();
+    render();
+  }
+
+  render();
+
+  pill.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var open = card.hidden;
+    card.hidden = !open;
+    pill.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function (e) {
+    if (card.hidden) return;
+    if (card.contains(e.target) || pill.contains(e.target)) return;
+    card.hidden = true;
+    pill.setAttribute('aria-expanded', 'false');
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !card.hidden) {
+      card.hidden = true;
+      pill.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  var panels = STOPS.map(function (s) { return document.getElementById(s.id); }).filter(Boolean);
+
+  function scanActive() {
+    panels.forEach(function (el) {
+      if (el.classList.contains('is-active')) mark(el.id);
+    });
+  }
+  if (window.MutationObserver) {
+    var mo = new MutationObserver(scanActive);
+    panels.forEach(function (el) {
+      mo.observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+    scanActive();
+  }
+
+  var isDesktop = window.matchMedia('(min-width: 1025px)').matches;
+  if (!isDesktop && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) mark(en.target.id); });
+    }, { rootMargin: '-30% 0px -55% 0px', threshold: 0 });
+    panels.forEach(function (el) { io.observe(el); });
+  }
+
+  var game = document.getElementById('ferryGame');
+  if (game && 'IntersectionObserver' in window) {
+    var gio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        pill.style.visibility = en.isIntersecting ? 'hidden' : '';
+        if (en.isIntersecting) {
+          card.hidden = true;
+          pill.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }, { threshold: 0.35 });
+    gio.observe(game);
+  }
+})();
+</script>
+<script src="./js/listen.js?v=1"></script>
 <script>
 (function () {
   var mq = window.matchMedia('(min-width: 1025px)');
